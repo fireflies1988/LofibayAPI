@@ -11,13 +11,15 @@ namespace DataAccessEF.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly LofibayDbContext _context;
+        private readonly ITokenService _tokenService;
 
-        public UnitOfWork(LofibayDbContext context)
+        public UnitOfWork(LofibayDbContext context, ITokenService tokenService)
         {
             _context = context;
+            _tokenService = tokenService;
 
             Photos = new PhotoRepository(_context);
-            Users = new UserRepository(_context);
+            Users = new UserRepository(_context, _tokenService);
             Tags = new TagRepository(_context);
         }
 

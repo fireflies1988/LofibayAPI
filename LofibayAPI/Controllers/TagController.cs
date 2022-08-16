@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Common.Models;
-using Common.Models.Dto;
+using Common.Helpers;
+using Common.Models.Dto.Requests;
 using Common.Models.ObjectResults;
 using Common.Models.ResponseTypes;
 using Domain.Interfaces;
@@ -25,7 +25,7 @@ namespace LofibayAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tag>>> GetAll()
         {
-            return Ok(new SuccessResponse
+            return Ok(new SuccessResponse<object>
             {
                 Data = await _unitOfWork.Tags.GetAllAsync()
             });
@@ -34,27 +34,27 @@ namespace LofibayAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Tag>> GetById(int id)
         {
-            return Ok(new SuccessResponse
+            return Ok(new SuccessResponse<object>
             {
                 Data = await _unitOfWork.Tags.GetByIdAsync(id)
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTag(TagDto tagDto)
+        public async Task<IActionResult> AddTag(AddTagRequest tagDto)
         {
             try
             {
                 await _unitOfWork.Tags.AddAsync(_mapper.Map<Tag>(tagDto));
                 await _unitOfWork.SaveChangesAsync();
-                return Ok(new SuccessResponse
+                return Ok(new SuccessResponse<object>
                 {
                     Message = "A new tag has been added successfully."
                 });
             }
             catch (Exception ex)
             {
-                return new InternalServerError(new ErrorResponse
+                return new InternalServerError(new ErrorResponse<object>
                 {
                     Message = ex.Message
                 });

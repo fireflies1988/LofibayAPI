@@ -4,6 +4,7 @@ using DataAccessEF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessEF.Migrations
 {
     [DbContext(typeof(LofibayDbContext))]
-    partial class LofibayDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220731170550_AddTable_RefreshTokens_For_Implementing_Jwt")]
+    partial class AddTable_RefreshTokens_For_Implementing_Jwt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,8 +263,8 @@ namespace DataAccessEF.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("GenderId")
-                        .HasColumnType("int");
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("JoinDate")
                         .HasColumnType("datetime2");
@@ -300,8 +302,6 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
-
-                    b.HasIndex("GenderId");
 
                     b.HasIndex("RoleId");
 
@@ -358,39 +358,6 @@ namespace DataAccessEF.Migrations
                     b.HasIndex("FollowerId");
 
                     b.ToTable("UserFollowers");
-                });
-
-            modelBuilder.Entity("Domain.Models.UserGender", b =>
-                {
-                    b.Property<int>("GenderId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GenderId"), 1L, 1);
-
-                    b.Property<string>("Gender")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("GenderId");
-
-                    b.ToTable("UserGenders");
-
-                    b.HasData(
-                        new
-                        {
-                            GenderId = 1,
-                            Gender = "Unknown"
-                        },
-                        new
-                        {
-                            GenderId = 2,
-                            Gender = "Male"
-                        },
-                        new
-                        {
-                            GenderId = 3,
-                            Gender = "Female"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Models.Collection", b =>
@@ -485,19 +452,11 @@ namespace DataAccessEF.Migrations
 
             modelBuilder.Entity("Domain.Models.User", b =>
                 {
-                    b.HasOne("Domain.Models.UserGender", "Gender")
-                        .WithMany("Users")
-                        .HasForeignKey("GenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Gender");
 
                     b.Navigation("Role");
                 });
@@ -569,11 +528,6 @@ namespace DataAccessEF.Migrations
                     b.Navigation("Photos");
 
                     b.Navigation("RefreshTokens");
-                });
-
-            modelBuilder.Entity("Domain.Models.UserGender", b =>
-                {
-                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

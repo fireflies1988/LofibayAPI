@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Common.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Models
 {
@@ -14,20 +10,24 @@ namespace Domain.Models
         public string? Email { get; set; }
         public string? Username { get; set; }
         public string? PasswordHash { get; set; }
+        public string? PasswordSalt { get; set; }
         public string? AvatarUrl { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public DateTime? DateOfBirth { get; set; }
-        public string? Gender { get; set; }
         [Phone]
         public string? PhoneNumber { get; set; }
         public string? Biography { get; set; }
-        public DateTime JoinDate { get; set; }
+        public DateTime JoinDate { get; set; } = DateTime.Now;
+        public DateTime ModifiedDate { get; set; } = DateTime.Now;
         public DateTime? DeletedDate { get; set; }
 
         public UserAddress? Address { get; set; }
 
-        public int RoleId { get; set; }
+        public int GenderId { get; set; } = Genders.Unknown;
+        public UserGender? Gender { get; set; }
+
+        public int RoleId { get; set; } = Roles.User;
         public Role? Role { get; set; }
 
         public ICollection<Photo>? Photos { get; set; }
@@ -36,5 +36,7 @@ namespace Domain.Models
 
         public IList<UserFollower>? Followers { get; set; }
         public IList<UserFollower>? Following { get; set; }
+
+        public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }
     }
 }

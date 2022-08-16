@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Common.Enums
 {
-    public class StatusTypes
+    public static class StatusTypes
     {
         public const string Success = "success";
         public const string Fail = "fail";

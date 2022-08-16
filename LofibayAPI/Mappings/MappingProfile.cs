@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
-using Common.Models.Dto;
+using Common.Models.Dto.Requests;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LofibayAPI.Mappings
 {
@@ -13,7 +8,8 @@ namespace LofibayAPI.Mappings
     {
         public MappingProfile()
         {
-            CreateMap<TagDto, Tag>();
+            CreateMap<AddTagRequest, Tag>();
+            CreateMap<SignupRequest, User>();
         }
     }
 }

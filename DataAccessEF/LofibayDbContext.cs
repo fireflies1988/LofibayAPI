@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Common.Enums;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessEF
@@ -13,7 +14,40 @@ namespace DataAccessEF
         {
             modelBuilder.Entity<User>(b =>
             {
+                b.Property(u => u.Email).IsRequired();
+
                 b.HasIndex(u => u.Email).IsUnique();
+
+                b.Property(u => u.Username)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                b.Property(u => u.FirstName)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.Property(u => u.LastName)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.Property(u => u.PasswordHash)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.Property(u => u.PasswordSalt)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.HasOne<UserGender>(u => u.Gender)
+                    .WithMany(ug => ug.Users)
+                    .HasForeignKey(u => u.GenderId);
+            });
+
+            modelBuilder.Entity<Photo>(b =>
+            {
+                b.Property(p => p.PhotoUrl)
+                    .IsRequired()
+                    .HasMaxLength(255);
             });
 
             modelBuilder.Entity<LikedPhoto>(b =>
@@ -57,20 +91,51 @@ namespace DataAccessEF
 
             modelBuilder.Entity<Role>()
                .HasData(
-                    new Role { RoleId = 1, RoleName = "Admin" },
-                    new Role { RoleId = 2, RoleName = "User" }
+                    new Role { RoleId = Common.Enums.Roles.Admin, RoleName = "Admin" },
+                    new Role { RoleId = Common.Enums.Roles.User, RoleName = "User" }
                 );
+
+            modelBuilder.Entity<UserGender>(b =>
+            {
+                b.HasKey(ug => ug.GenderId);
+
+                b.HasData(
+                    new UserGender { GenderId = Genders.Unknown, Gender = "Unknown" },
+                    new UserGender { GenderId = Genders.Male, Gender = "Male" },
+                    new UserGender { GenderId = Genders.Female, Gender = "Female" }
+                    );
+            });
+
+            modelBuilder.Entity<Tag>(b =>
+            {
+                b.Property(t => t.TagName).IsRequired();
+            });
+
+            modelBuilder.Entity<RefreshToken>(b =>
+            {
+                b.Property(rt => rt.ExpirationDate).HasColumnType("smalldatetime");
+
+                b.Property(rt => rt.TokenHash)
+                    .IsRequired()
+                    .HasMaxLength(1000);
+
+                b.Property(rt => rt.TokenSalt)
+                    .IsRequired()
+                    .HasMaxLength(1000);
+            });
         }
 
         public DbSet<User>? Users { get; set; }
         public DbSet<Role>? Roles { get; set; }
         public DbSet<Photo>? Photos { get; set; }
         public DbSet<UserAddress>? UserAddresses { get; set; }
+        public DbSet<UserGender>? UserGenders { get; set; }
         public DbSet<Tag>? Tags { get; set; }
         public DbSet<Collection>? Collections { get; set; }
         public DbSet<LikedPhoto>? LikedPhotos { get; set; }
         public DbSet<PhotoTag>? PhotoTags { get; set; }
         public DbSet<PhotoCollection>? PhotoCollections { get; set; }
         public DbSet<UserFollower>? UserFollowers { get; set; }
+        public DbSet<RefreshToken>? RefreshTokens { get; set; }
     }
 }

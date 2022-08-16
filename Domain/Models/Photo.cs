@@ -21,7 +21,8 @@ namespace Domain.Models
         public bool IsFeatured { get; set; } = false;
         public long Views { get; set; }
         public long Downloads { get; set; }
-        public DateTime UploadedAt { get; set; }
+        public DateTime UploadedAt { get; set; } = DateTime.Now;
+        public DateTime ModifiedDate { get; set; } = DateTime.Now;
         public DateTime? DeletedDate { get; set; }
 
         public int UserId { get; set; }

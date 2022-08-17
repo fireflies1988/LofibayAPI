@@ -1,8 +1,9 @@
-﻿using Common.Enums;
-using Common.Models.Dto.Requests;
-using Common.Models.Dto.Responses;
-using Common.Models.ResponseTypes;
+﻿using Domain.Enums;
 using Domain.Interfaces;
+using Domain.Interfaces.Services;
+using Domain.Models.DTOs.Requests;
+using Domain.Models.DTOs.Responses;
+using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,11 +16,13 @@ namespace LofibayAPI.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
+        private readonly IUserService _userService;
 
-        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService)
+        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
+            _userService = userService;
         }
 
         [HttpPost("login")]
@@ -33,7 +36,7 @@ namespace LofibayAPI.Controllers
                 });
             }
 
-            var loginResponse = await _unitOfWork.Users.LoginAsync(loginRequest);
+            var loginResponse = await _userService.LoginAsync(loginRequest);
             if (loginResponse.Status == StatusTypes.Fail)
             {
                 return Unauthorized(loginResponse);
@@ -52,14 +55,14 @@ namespace LofibayAPI.Controllers
                     Message = "Missing refresh token details."
                 });
             }
-
+            
             var validateRefreshTokenResponse = await _tokenService.ValidateRefreshTokenAsync(refreshTokenRequest);
             if (validateRefreshTokenResponse.Status == StatusTypes.Fail)
             {
                 return UnprocessableEntity(validateRefreshTokenResponse);
             }
 
-            var tokenResponse = await _tokenService.GenerateTokensAsync(validateRefreshTokenResponse.Data!.UserId);
+            var tokenResponse = await _tokenService.GenerateTokensAsync((await _unitOfWork.Users.GetByIdAsync(validateRefreshTokenResponse.Data!.UserId))!);
             return Ok(new
             {
                 AccessToken = tokenResponse?.Item1,
@@ -70,7 +73,7 @@ namespace LofibayAPI.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> Join(SignupRequest signupRequest)
         {
-            var signupResposne = await _unitOfWork.Users.SignupAsync(signupRequest);
+            var signupResposne = await _userService.SignupAsync(signupRequest);
 
             if (signupResposne.Status == StatusTypes.Fail)
             {
@@ -85,7 +88,7 @@ namespace LofibayAPI.Controllers
         public async Task<IActionResult> Logout()
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var logoutResponse = await _unitOfWork.Users.LogoutAsync(userId);
+            var logoutResponse = await _userService.LogoutAsync(userId);
 
             if (logoutResponse.Status == StatusTypes.Fail)
             {

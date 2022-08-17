@@ -4,6 +4,7 @@ using DataAccessEF;
 using DataAccessEF.Services;
 using DataAccessEF.UnitOfWork;
 using Domain.Interfaces;
+using Domain.Interfaces.Services;
 using LofibayAPI.Mappings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LofibayDev")));
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 // Auto Mapper Configurations
 var mapperConfig = new MapperConfiguration(mc =>
@@ -57,7 +59,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
             ValidAudience = builder.Configuration["Jwt:ValidAudience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(ConfigurationHelper.Configuration!["Jwt:SecretKey"]))
+            ClockSkew = TimeSpan.Zero, // default is five minutes (not sure)
+            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(builder.Configuration!["Jwt:SecretKey"]))
         };
     });
 builder.Services.AddAuthorization();

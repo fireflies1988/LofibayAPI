@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Common.Models.Dto.Requests;
-using Domain.Models;
+using Domain.Models.DTOs.Requests;
+using Domain.Entities;
 
 namespace LofibayAPI.Mappings
 {

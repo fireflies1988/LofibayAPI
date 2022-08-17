@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Interfaces.Repositories;
 
 namespace Domain.Interfaces
 {
@@ -11,6 +7,7 @@ namespace Domain.Interfaces
         IPhotoRepository Photos { get; }
         IUserRepository Users { get; }
         ITagRepository Tags { get; }
+        IRefreshTokenRepository RefreshTokens { get; }
 
         Task<int> SaveChangesAsync();
     }

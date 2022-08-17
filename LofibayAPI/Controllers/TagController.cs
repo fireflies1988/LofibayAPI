@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using Common.Helpers;
-using Common.Models.Dto.Requests;
-using Common.Models.ObjectResults;
-using Common.Models.ResponseTypes;
+using Domain.Entities;
 using Domain.Interfaces;
-using Domain.Models;
+using Domain.Models.DTOs.Requests;
+using Domain.Models.ObjectResults;
+using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LofibayAPI.Controllers

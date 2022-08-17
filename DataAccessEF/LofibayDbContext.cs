@@ -1,5 +1,5 @@
-﻿using Common.Enums;
-using Domain.Models;
+﻿using Domain.Entities;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessEF
@@ -15,8 +15,6 @@ namespace DataAccessEF
             modelBuilder.Entity<User>(b =>
             {
                 b.Property(u => u.Email).IsRequired();
-
-                b.HasIndex(u => u.Email).IsUnique();
 
                 b.Property(u => u.Username)
                     .IsRequired()
@@ -91,8 +89,8 @@ namespace DataAccessEF
 
             modelBuilder.Entity<Role>()
                .HasData(
-                    new Role { RoleId = Common.Enums.Roles.Admin, RoleName = "Admin" },
-                    new Role { RoleId = Common.Enums.Roles.User, RoleName = "User" }
+                    new Role { RoleId = Domain.Enums.Roles.Admin, RoleName = "Admin" },
+                    new Role { RoleId = Domain.Enums.Roles.User, RoleName = "User" }
                 );
 
             modelBuilder.Entity<UserGender>(b =>

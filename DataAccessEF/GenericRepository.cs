@@ -21,7 +21,7 @@ namespace DataAccessEF
         public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, string includeProperties = "")
         {
             IQueryable<T> query = Context.Set<T>();
-
+            
             if (filter != null)
             {
                 query = query.Where(filter);
@@ -40,6 +40,11 @@ namespace DataAccessEF
             {
                 return await query.ToListAsync();
             }
+        }
+
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null, string includeProperties = "")
+        {
+            return (await GetAsync(filter: filter, includeProperties: includeProperties)).FirstOrDefault();
         }
 
         public async Task<T?> GetByIdAsync(int id)

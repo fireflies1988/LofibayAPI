@@ -12,7 +12,7 @@ namespace Domain.Interfaces.Services
 {
     public interface ITokenService
     {
-        Task<Tuple<string, string>?> GenerateTokensAsync(User user);
+        Task<Tuple<string, string>?> GenerateTokensAsync(User? user);
         Task<BaseResponse<ValidateRefreshTokenResponse>> ValidateRefreshTokenAsync(RefreshTokenRequest refreshTokenRequest);
         bool RemoveRefreshToken(User user);
     }

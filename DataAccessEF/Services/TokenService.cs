@@ -18,7 +18,7 @@ namespace DataAccessEF.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Tuple<string, string>?> GenerateTokensAsync(User user)
+        public async Task<Tuple<string, string>?> GenerateTokensAsync(User? user)
         {
             if (user == null)
             {
@@ -67,7 +67,7 @@ namespace DataAccessEF.Services
 
         public async Task<BaseResponse<ValidateRefreshTokenResponse>> ValidateRefreshTokenAsync(RefreshTokenRequest refreshTokenRequest)
         {
-            RefreshToken? refreshToken = (await _unitOfWork.RefreshTokens!.GetAsync(filter: rt => rt.UserId == refreshTokenRequest.UserId)).FirstOrDefault();
+            RefreshToken? refreshToken = (await _unitOfWork.RefreshTokens!.GetFirstOrDefaultAsync(filter: rt => rt.UserId == refreshTokenRequest.UserId));
             if (refreshToken == null)
             {
                 return new FailResponse<ValidateRefreshTokenResponse>

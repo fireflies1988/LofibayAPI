@@ -2,7 +2,6 @@
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Models.DTOs.Requests;
-using Domain.Models.ObjectResults;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,17 +45,14 @@ namespace LofibayAPI.Controllers
             {
                 await _unitOfWork.Tags.AddAsync(_mapper.Map<Tag>(tagDto));
                 await _unitOfWork.SaveChangesAsync();
-                return Ok(new SuccessResponse<object>
+                return Ok(new SuccessResponse
                 {
                     Message = "A new tag has been added successfully."
                 });
             }
             catch (Exception ex)
             {
-                return new InternalServerError(new ErrorResponse<object>
-                {
-                    Message = ex.Message
-                });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
             }
         }
     }

@@ -15,4 +15,9 @@ namespace Domain.Models.ResponseTypes
     {
         public override string Status => StatusTypes.Success;
     }
+
+    public class SuccessResponse : BaseResponse<object>
+    {
+        public override string Status => StatusTypes.Success;
+    }
 }

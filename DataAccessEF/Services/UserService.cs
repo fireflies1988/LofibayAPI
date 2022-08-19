@@ -1,11 +1,14 @@
-﻿using Common.Helpers;
+﻿using AutoMapper;
+using Common.Helpers;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests;
 using Domain.Models.DTOs.Responses;
 using Domain.Models.ResponseTypes;
-using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace DataAccessEF.Services
 {
@@ -13,35 +16,54 @@ namespace DataAccessEF.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMapper _mapper;
 
-        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService)
+        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
+            _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
+        }
+
+        public int GetCurrentUserId()
+        {
+            return int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        }
+
+        public string GetCurrentEmail()
+        {
+            return _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email);
+        }
+
+        public string GetCurrentUsername()
+        {
+            return _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         }
 
         public async Task<BaseResponse<TokenResponse>> LoginAsync(LoginRequest loginRequest)
         {
-            User? existingUser = (await _unitOfWork.Users.GetAsync(filter: u => u.Email == loginRequest.Email && !u.DeletedDate.HasValue, includeProperties: "RefreshTokens")).SingleOrDefault();
+            User? existingUser = (await _unitOfWork.Users.GetAsync(filter: u => u.Email == loginRequest.Email && !u.DeletedDate.HasValue, includeProperties: "RefreshTokens,Role")).SingleOrDefault();
             if (existingUser == null)
             {
                 return new FailResponse<TokenResponse>
                 {
-                    Message = "Email not found."
+                    Message = "Incorrect email or password."
                 };
             }
 
             // verify password hash
-            string passwordHash = PasswordHelper.HashUsingPbkdf2(loginRequest.Password!, Convert.FromBase64String(existingUser.PasswordSalt!));
-            if (existingUser.PasswordHash != passwordHash)
+            string loginPasswordHash = PasswordHelper.HashUsingPbkdf2(loginRequest.Password!, Convert.FromBase64String(existingUser.PasswordSalt!));
+            if (existingUser.PasswordHash != loginPasswordHash)
             {
                 return new FailResponse<TokenResponse>
                 {
-                    Message = "Invalid password."
+                    Message = "Incorrect email or password."
                 };
             }
 
-            var token = await _tokenService.GenerateTokensAsync(existingUser);
+            Tuple<string, string>? token = await _tokenService.GenerateTokensAsync(existingUser);
             return new SuccessResponse<TokenResponse>
             {
                 Data = new TokenResponse
@@ -52,9 +74,9 @@ namespace DataAccessEF.Services
             };
         }
 
-        public async Task<BaseResponse<LogoutResponse>> LogoutAsync(int userId)
+        public async Task<BaseResponse<LogoutResponse>> LogoutAsync()
         {
-            RefreshToken? refreshToken = (await _unitOfWork.RefreshTokens.GetAsync(filter: rt => rt.UserId == userId)).FirstOrDefault();
+            RefreshToken? refreshToken = await _unitOfWork.RefreshTokens.GetFirstOrDefaultAsync(filter: rt => rt.UserId == GetCurrentUserId());
 
             if (refreshToken == null)
             {
@@ -62,8 +84,7 @@ namespace DataAccessEF.Services
             }
 
             _unitOfWork.RefreshTokens?.Remove(refreshToken);
-            int saveResponse = await _unitOfWork.SaveChangesAsync();
-            if (saveResponse >= 0)
+            if (await _unitOfWork.SaveChangesAsync() > 0)
             {
                 return new SuccessResponse<LogoutResponse>();
             }
@@ -76,12 +97,21 @@ namespace DataAccessEF.Services
 
         public async Task<BaseResponse<SignupResponse>> SignupAsync(SignupRequest signupRequest)
         {
-            User? existingUser = (await _unitOfWork.Users!.GetAsync(u => u.Email == signupRequest.Email && !u.DeletedDate.HasValue)).FirstOrDefault();
-            if (existingUser != null)
+            User? existingUserWithThisEmail = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.Email == signupRequest.Email && !u.DeletedDate.HasValue);
+            if (existingUserWithThisEmail != null)
             {
                 return new FailResponse<SignupResponse>
                 {
                     Message = "An account already exists with the same email."
+                };
+            }
+
+            User? existingUserWithThisUsername = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.Username == signupRequest.Username && !u.DeletedDate.HasValue);
+            if (existingUserWithThisUsername != null)
+            {
+                return new FailResponse<SignupResponse>
+                {
+                    Message = "A user with this username already exists."
                 };
             }
 
@@ -102,9 +132,8 @@ namespace DataAccessEF.Services
             //    };
             //}
 
-            var salt = PasswordHelper.GetSecureSalt();
-            var passwordHash = PasswordHelper.HashUsingPbkdf2(signupRequest.Password!, salt);
-
+            byte[] salt = PasswordHelper.GetSecureSalt();
+            string passwordHash = PasswordHelper.HashUsingPbkdf2(signupRequest.Password!, salt);
             var user = new User
             {
                 Email = signupRequest.Email,
@@ -118,8 +147,7 @@ namespace DataAccessEF.Services
             };
             await _unitOfWork.Users.AddAsync(user);
 
-            var saveResponse = await _unitOfWork.SaveChangesAsync();
-            if (saveResponse >= 0)
+            if (await _unitOfWork.SaveChangesAsync() > 0)
             {
                 return new SuccessResponse<SignupResponse>
                 {
@@ -134,6 +162,90 @@ namespace DataAccessEF.Services
             {
                 Message = "Unable to save the user."
             };
+        }
+
+        public async Task<BaseResponse<UserInfoResponse>> UpdateUserAsync(UpdateUserRequest updateUserRequest)
+        {
+            User? currentUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(filter: u => u.UserId == GetCurrentUserId(), includeProperties: "Address");
+
+            if (updateUserRequest.Email != null && updateUserRequest.Email != currentUser?.Email)
+            {
+                User? existingUserWithThisEmail = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.Email == updateUserRequest.Email && !u.DeletedDate.HasValue);
+                if (existingUserWithThisEmail != null)
+                {
+                    return new FailResponse<UserInfoResponse>
+                    {
+                        Message = "The email address already exists."
+                    };
+                }
+            }
+
+            if (updateUserRequest.Username != null && updateUserRequest.Username != currentUser?.Username)
+            {
+                User? existingUserWithThisUsername = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.Username == updateUserRequest.Username && !u.DeletedDate.HasValue);
+                if (existingUserWithThisUsername != null)
+                {
+                    return new FailResponse<UserInfoResponse>
+                    {
+                        Message = "The username already exists."
+                    };
+                }
+            }
+
+            currentUser = _mapper.Map<UpdateUserRequest, User>(updateUserRequest, currentUser!);
+            _unitOfWork.Users.Update(currentUser);
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                return new SuccessResponse<UserInfoResponse>
+                {
+                    Message = "Your profile has been updated successfully.",
+                    Data = _mapper.Map<UserInfoResponse>(currentUser)
+                };
+            }
+
+            return new FailResponse<UserInfoResponse>
+            {
+                Message = "Failed to update your profile."
+            };
+        }
+
+        public async Task<BaseResponse<ChangePasswordResponse>> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest)
+        {
+            User? currentUser = await _unitOfWork.Users.GetByIdAsync(GetCurrentUserId());
+
+            string currentPasswordHash = PasswordHelper.HashUsingPbkdf2(changePasswordRequest.CurrentPassword!, Convert.FromBase64String(currentUser?.PasswordSalt!));
+            if (currentUser?.PasswordHash != currentPasswordHash)
+            {
+                return new FailResponse<ChangePasswordResponse>
+                {
+                    Message = "Incorrect current password."
+                };
+            }
+
+            if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword)
+            {
+                return new FailResponse<ChangePasswordResponse>
+                {
+                    Message = "The new password and confirmation password do not match."
+                };
+            }
+
+            byte[] newSalt = PasswordHelper.GetSecureSalt();
+            string newPasswordHash = PasswordHelper.HashUsingPbkdf2(changePasswordRequest.NewPassword, newSalt);
+            currentUser.PasswordHash = newPasswordHash;
+            currentUser.PasswordSalt = Convert.ToBase64String(newSalt);
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                var logoutResponse = await LogoutAsync();
+                string message = "Your password has been changed.";
+                if (logoutResponse.Status == StatusTypes.Success)
+                {
+                    message = "Your password has been changed. Please log in again with your new password.";
+                }
+                return new SuccessResponse<ChangePasswordResponse> { Message = message };
+            }
+
+            return new FailResponse<ChangePasswordResponse> { Message = "Failed to change the password." };
         }
     }
 }

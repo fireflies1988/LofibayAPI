@@ -1,12 +1,14 @@
-﻿using Domain.Enums;
+﻿using AutoMapper;
+using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests;
 using Domain.Models.DTOs.Responses;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace LofibayAPI.Controllers
 {
@@ -17,25 +19,19 @@ namespace LofibayAPI.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
         private readonly IUserService _userService;
+        private readonly IMapper _mapper;
 
-        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService)
+        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _userService = userService;
+            _mapper = mapper;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
-            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Password))
-            {
-                return BadRequest(new FailResponse<TokenResponse>
-                {
-                    Message = "Missing login details."
-                });
-            }
-
             var loginResponse = await _userService.LoginAsync(loginRequest);
             if (loginResponse.Status == StatusTypes.Fail)
             {
@@ -62,7 +58,7 @@ namespace LofibayAPI.Controllers
                 return UnprocessableEntity(validateRefreshTokenResponse);
             }
 
-            var tokenResponse = await _tokenService.GenerateTokensAsync((await _unitOfWork.Users.GetByIdAsync(validateRefreshTokenResponse.Data!.UserId))!);
+            var tokenResponse = await _tokenService.GenerateTokensAsync(await _unitOfWork.Users.GetFirstOrDefaultAsync(filter: u => u.UserId == validateRefreshTokenResponse.Data!.UserId, includeProperties: "Role,RefreshTokens"));
             return Ok(new
             {
                 AccessToken = tokenResponse?.Item1,
@@ -74,7 +70,6 @@ namespace LofibayAPI.Controllers
         public async Task<IActionResult> Join(SignupRequest signupRequest)
         {
             var signupResposne = await _userService.SignupAsync(signupRequest);
-
             if (signupResposne.Status == StatusTypes.Fail)
             {
                 return UnprocessableEntity(signupResposne);
@@ -84,11 +79,10 @@ namespace LofibayAPI.Controllers
         }
 
         [Authorize]
-        [HttpPost("logout")]
+        [HttpDelete("logout")]
         public async Task<IActionResult> Logout()
         {
-            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var logoutResponse = await _userService.LogoutAsync(userId);
+            var logoutResponse = await _userService.LogoutAsync();
 
             if (logoutResponse.Status == StatusTypes.Fail)
             {
@@ -96,6 +90,51 @@ namespace LofibayAPI.Controllers
             }
 
             return Ok(logoutResponse);
+        }
+
+        [Authorize]
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentUserInfo()
+        {
+            return Ok(new SuccessResponse<UserInfoResponse>
+            {
+                Data = _mapper.Map<UserInfoResponse>(await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == _userService.GetCurrentUserId(), includeProperties: "Address,Gender"))
+            });
+        }
+
+        [Authorize]
+        [HttpPatch("current")]
+        public async Task<IActionResult> EditProfile(UpdateUserRequest updateUserRequest)
+        {
+            var updateUserResponse = await _userService.UpdateUserAsync(updateUserRequest);
+            if (updateUserResponse.Status == StatusTypes.Fail)
+            {
+                return UnprocessableEntity(updateUserResponse);
+            }
+
+            return Ok(updateUserResponse);
+        }
+
+        [Authorize]
+        [HttpPatch("current/password/change")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
+        {
+            var changePasswordResponse = await _userService.ChangePasswordAsync(changePasswordRequest);
+            if (changePasswordResponse.Status == StatusTypes.Fail)
+            {
+                return UnprocessableEntity(changePasswordResponse);
+            }
+
+            return Ok(changePasswordResponse);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserInfoById(int id)
+        {
+            return Ok(new SuccessResponse<UserInfoResponse>
+            {
+                Data = _mapper.Map<UserInfoResponse>(await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == id, includeProperties: "Address,Gender"))
+            });
         }
     }
 }

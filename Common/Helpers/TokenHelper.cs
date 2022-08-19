@@ -19,7 +19,8 @@ namespace Common.Helpers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email!),
-                new Claim(ClaimTypes.Name, user.Username!)
+                new Claim(ClaimTypes.Name, user.Username!),
+                new Claim(ClaimTypes.Role, user.Role?.RoleName!)
             });
 
             var signingCredentials = new SigningCredentials(key: new SymmetricSecurityKey(secretKey), algorithm: SecurityAlgorithms.HmacSha256Signature);
@@ -30,7 +31,7 @@ namespace Common.Helpers
                 Issuer = ConfigurationHelper.Configuration["Jwt:ValidIssuer"],
                 Audience = ConfigurationHelper.Configuration["Jwt:ValidAudience"],
                 Expires = DateTime.Now.AddMinutes(ConfigurationHelper.Configuration.GetValue<double>("Jwt:AccessTokenExpirationMinutes")),
-                SigningCredentials = signingCredentials,
+                SigningCredentials = signingCredentials
             };
 
             return tokenHandler.CreateEncodedJwt(tokenDescriptor);

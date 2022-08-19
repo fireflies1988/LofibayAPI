@@ -10,6 +10,6 @@ namespace Domain.Models.DTOs.Requests
     public class AddTagRequest
     {
         [Required]
-        public string? TagName { get; set; }
+        public string TagName { get; set; } = string.Empty;
     }
 }

@@ -15,4 +15,9 @@ namespace Domain.Models.ResponseTypes
     {
         public override string? Status => StatusTypes.Fail;
     }
+
+    public class FailResponse : BaseResponse<object>
+    {
+        public override string? Status => StatusTypes.Fail;
+    }
 }

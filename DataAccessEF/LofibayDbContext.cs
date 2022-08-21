@@ -46,6 +46,41 @@ namespace DataAccessEF
                 b.Property(p => p.PhotoUrl)
                     .IsRequired()
                     .HasMaxLength(255);
+
+                b.Property(p => p.Format).IsRequired();
+            });
+
+            modelBuilder.Entity<Tag>(b =>
+            {
+                b.HasKey(t => t.Name);
+
+                b.Property(t => t.Name).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<Color>(b =>
+            {
+                b.HasKey(c => c.Name);
+
+                b.Property(c => c.Name).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ColorAnalyzer>(b =>
+            {
+                b.Property(ca => ca.ColorAnalyzerName).IsRequired().HasMaxLength(50);
+
+                b.HasData(
+                    new ColorAnalyzer { ColorAnalyzerId = Domain.Enums.ColorAnalyzers.Google, ColorAnalyzerName = "Google" },
+                    new ColorAnalyzer { ColorAnalyzerId = Domain.Enums.ColorAnalyzers.Cloudinary, ColorAnalyzerName = "Cloudinary" });
+            });
+
+            modelBuilder.Entity<Role>(b =>
+            {
+                b.Property(r => r.RoleName).IsRequired().HasMaxLength(50);
+
+                b.HasData(
+                    new Role { RoleId = Domain.Enums.Roles.Admin, RoleName = "Admin" },
+                    new Role { RoleId = Domain.Enums.Roles.User, RoleName = "User" }
+                );
             });
 
             modelBuilder.Entity<LikedPhoto>(b =>
@@ -61,7 +96,10 @@ namespace DataAccessEF
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            modelBuilder.Entity<PhotoTag>().HasKey(pt => new { pt.PhotoId, pt.TagId });
+            modelBuilder.Entity<PhotoTag>(b =>
+            {
+                b.HasKey(pt => new { pt.PhotoId, pt.TagName });
+            });
 
             modelBuilder.Entity<PhotoCollection>(b =>
             {
@@ -87,12 +125,6 @@ namespace DataAccessEF
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            modelBuilder.Entity<Role>()
-               .HasData(
-                    new Role { RoleId = Domain.Enums.Roles.Admin, RoleName = "Admin" },
-                    new Role { RoleId = Domain.Enums.Roles.User, RoleName = "User" }
-                );
-
             modelBuilder.Entity<UserGender>(b =>
             {
                 b.HasKey(ug => ug.GenderId);
@@ -104,9 +136,9 @@ namespace DataAccessEF
                     );
             });
 
-            modelBuilder.Entity<Tag>(b =>
+            modelBuilder.Entity<PhotoColor>(b =>
             {
-                b.Property(t => t.TagName).IsRequired();
+                b.HasKey(pc => new { pc.PhotoId, pc.ColorName, pc.ColorAnalyzerId });
             });
 
             modelBuilder.Entity<RefreshToken>(b =>
@@ -130,10 +162,13 @@ namespace DataAccessEF
         public DbSet<UserGender>? UserGenders { get; set; }
         public DbSet<Tag>? Tags { get; set; }
         public DbSet<Collection>? Collections { get; set; }
+        public DbSet<Color>? Colors { get; set; }
+        public DbSet<ColorAnalyzer>? ColorAnalyzers { get; set; }
         public DbSet<LikedPhoto>? LikedPhotos { get; set; }
         public DbSet<PhotoTag>? PhotoTags { get; set; }
         public DbSet<PhotoCollection>? PhotoCollections { get; set; }
         public DbSet<UserFollower>? UserFollowers { get; set; }
         public DbSet<RefreshToken>? RefreshTokens { get; set; }
+        public DbSet<PhotoColor>? PhotoColors { get; set; }
     }
 }

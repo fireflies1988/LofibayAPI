@@ -4,6 +4,7 @@ using DataAccessEF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessEF.Migrations
 {
     [DbContext(typeof(LofibayDbContext))]
-    partial class LofibayDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220821090215_AddTables_Colors-PhotoColors-ColorAnalyzers_And_AddOrRemoveSomePropertiesOfOtherTables")]
+    partial class AddTables_ColorsPhotoColorsColorAnalyzers_And_AddOrRemoveSomePropertiesOfOtherTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

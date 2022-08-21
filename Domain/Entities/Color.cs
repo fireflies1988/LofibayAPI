@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Tag
+    public class Color
     {
         public string? Name { get; set; }
 
-        [JsonIgnore]
-        public IList<PhotoTag>? PhotoTags { get; set; }
+        public IList<PhotoColor>? PhotoColors { get; set; }
     }
 }

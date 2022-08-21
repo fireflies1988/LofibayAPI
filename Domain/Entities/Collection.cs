@@ -11,6 +11,8 @@ namespace Domain.Entities
         public int CollectionId { get; set; }
         public string? CollectionName { get; set; }
         public bool IsPrivate { get; set; } = false;
+        public bool IsFeatured { get; set; } = false;
+        public int Views { get; set; }
 
         public int UserId { get; set; }
         public User? User { get; set; }

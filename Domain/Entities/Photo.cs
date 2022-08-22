@@ -3,6 +3,7 @@
     public class Photo
     {
         public int PhotoId { get; set; }
+        public string? PublicId { get; set; }
         public string? PhotoUrl { get; set; }
         public string? Description { get; set; }
         public string? Location { get; set; }
@@ -14,7 +15,6 @@
         public string? Camera { get; set; }
         public string? Software { get; set; }
         public int FacesDetected { get; set; }
-        public string? Colors { get; set; }
         public string? Phash { get; set; }
         public bool SemiTransparent { get; set; } = false;
         public bool Grayscale { get; set; } = false;

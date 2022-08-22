@@ -193,7 +193,6 @@ namespace DataAccessEF.Services
             }
 
             currentUser = _mapper.Map<UpdateUserRequest, User>(updateUserRequest, currentUser!);
-            _unitOfWork.Users.Update(currentUser);
             if (await _unitOfWork.SaveChangesAsync() > 0)
             {
                 return new SuccessResponse<UserInfoResponse>

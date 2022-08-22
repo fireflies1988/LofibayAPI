@@ -1,5 +1,7 @@
-﻿using Domain.Interfaces.Services;
+﻿using Domain.Enums;
+using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests;
+using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,20 +22,66 @@ namespace LofibayAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadPhoto([FromForm]UploadPhotoRequest uploadPhotoRequest)
         {
-            return Ok(await _photoService.UploadPhotoAsync(uploadPhotoRequest));
+            if (!uploadPhotoRequest.ImageFile!.ContentType.Contains("image"))
+            {
+                return BadRequest(new FailResponse { Message = "The input file accepts image formats only." });
+            }
+
+            try
+            {
+                var uploadPhotoResponse = await _photoService.UploadPhotoAsync(uploadPhotoRequest);
+                if (uploadPhotoResponse.Status == StatusTypes.Fail)
+                {
+                    return UnprocessableEntity(uploadPhotoResponse);
+                }
+                return Ok(uploadPhotoResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> ViewPhotoDetails(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = await _photoService.GetPhotoDetailsByIdAsync(id);
+                if (response.Status == StatusTypes.NotFound)
+                {
+                    return NotFound(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePhoto(int id, UpdatePhotoRequest updatePhotoRequest)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var updatePhotoResponse = await _photoService.UpdatePhotoAsync(id, updatePhotoRequest);
+                if (updatePhotoResponse.Status == StatusTypes.NotFound)
+                {
+                    return NotFound(updatePhotoResponse);
+                }
+                if (updatePhotoResponse.Status == StatusTypes.Unauthorized)
+                {
+                    return Unauthorized(updatePhotoResponse);
+                }
+
+                return Ok(updatePhotoResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
+            }
         }
 
         [Authorize]

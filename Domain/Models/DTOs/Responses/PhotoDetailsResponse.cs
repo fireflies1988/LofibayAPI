@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Models.DTOs.Responses
 {
-    public class UploadPhotoResponse
+    public class PhotoDetailsResponse
     {
         public int PhotoId { get; set; }
         public string? PublicId { get; set; }
@@ -29,10 +29,11 @@ namespace Domain.Models.DTOs.Responses
         public bool HasSensitiveContent { get; set; }
         public long Views { get; set; }
         public long Downloads { get; set; }
+        public int Likes { get; set; }
         public DateTime UploadedAt { get; set; }
         public DateTime ModifiedDate { get; set; }
 
-        public int UserId { get; set; }
+        public UserInfoResponse? User { get; set; }
 
         public IList<PhotoTag>? PhotoTags { get; set; }
 

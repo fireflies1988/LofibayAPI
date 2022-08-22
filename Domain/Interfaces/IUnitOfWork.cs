@@ -1,4 +1,5 @@
 ﻿using Domain.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Domain.Interfaces
 {
@@ -8,6 +9,8 @@ namespace Domain.Interfaces
         IUserRepository Users { get; }
         ITagRepository Tags { get; }
         IRefreshTokenRepository RefreshTokens { get; }
+        IColorRepository Colors { get; }
+        DatabaseFacade Database { get; }
 
         Task<int> SaveChangesAsync();
     }

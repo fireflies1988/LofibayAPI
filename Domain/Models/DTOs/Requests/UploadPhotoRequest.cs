@@ -7,6 +7,7 @@ namespace Domain.Models.DTOs.Requests
     {
         [Required]
         public IFormFile? ImageFile { get; set; }
+        public IList<string>? Tags { get; set; }
         public string? Description { get; set; }
         public string? Location { get; set; }
         public DateTime? TakenAt { get; set; }

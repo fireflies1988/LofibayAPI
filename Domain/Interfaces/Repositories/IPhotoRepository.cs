@@ -9,5 +9,7 @@ namespace Domain.Interfaces.Repositories
 {
     public interface IPhotoRepository : IGenericRepository<Photo>
     {
+        Task<Photo?> GetPhotoIncludingColorAnalyzerByIdAsync(int id);
+        Task<Photo?> GetPhotoDetailsByIdAsync(int id);
     }
 }

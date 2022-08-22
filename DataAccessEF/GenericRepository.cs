@@ -47,7 +47,7 @@ namespace DataAccessEF
             return (await GetAsync(filter: filter, includeProperties: includeProperties)).FirstOrDefault();
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(dynamic id)
         {
             return await Context.Set<T>().FindAsync(id);
         }

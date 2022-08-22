@@ -1,3 +1,4 @@
+using CloudinaryDotNet;
 using Common.Helpers;
 using DataAccessEF;
 using DataAccessEF.Services;
@@ -11,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
+ConfigurationHelper.Initialize(builder.Configuration);
 
 // Add services to the container.
 
@@ -23,6 +25,7 @@ builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IPhotoService, PhotoService>();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddSingleton(new Cloudinary(builder.Configuration!["CloudinaryUrl"]));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -38,8 +41,6 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
-
-ConfigurationHelper.Initialize(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

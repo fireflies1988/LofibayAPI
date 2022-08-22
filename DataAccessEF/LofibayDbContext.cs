@@ -47,6 +47,8 @@ namespace DataAccessEF
                     .IsRequired()
                     .HasMaxLength(255);
 
+                b.Property(p => p.PublicId).IsRequired();
+
                 b.Property(p => p.Format).IsRequired();
             });
 

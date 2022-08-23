@@ -1,8 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿using Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.Models.DTOs.Responses
 {
-    public class Photo
+    public class CurrentUserPhotoDetailsResponse
     {
         public int PhotoId { get; set; }
         public string? PublicId { get; set; }
@@ -18,25 +23,17 @@ namespace Domain.Entities
         public string? Software { get; set; }
         public int FacesDetected { get; set; }
         public string? Phash { get; set; }
-        public bool SemiTransparent { get; set; } = false;
-        public bool Grayscale { get; set; } = false;
-        public bool IsFeatured { get; set; } = false;
-        public bool HasSensitiveContent { get; set; } = false;
+        public bool SemiTransparent { get; set; }
+        public bool Grayscale { get; set; }
+        public bool IsFeatured { get; set; }
+        public bool HasSensitiveContent { get; set; }
         public long Views { get; set; }
         public long Downloads { get; set; }
-        public DateTime UploadedAt { get; set; } = DateTime.Now;
-        public DateTime ModifiedDate { get; set; } = DateTime.Now;
-        public DateTime? DeletedDate { get; set; }
-
-        public int UserId { get; set; }
-        public User? User { get; set; }
-
-        public IList<LikedPhoto>? LikedPhotos { get; set; }
+        public int Likes { get; set; }
+        public DateTime UploadedAt { get; set; }
+        public DateTime ModifiedDate { get; set; }
 
         public IList<PhotoTag>? PhotoTags { get; set; }
-
-        [JsonIgnore]
-        public IList<PhotoCollection>? PhotoCollections { get; set; }
 
         public IList<PhotoColor>? PhotoColors { get; set; }
     }

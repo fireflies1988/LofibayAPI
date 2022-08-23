@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.Models.DTOs.Responses
 {
-    public class Collection
+    public class EditCollectionResponse
     {
         public int CollectionId { get; set; }
         public string? CollectionName { get; set; }
@@ -14,12 +14,9 @@ namespace Domain.Entities
         public bool IsPrivate { get; set; } = false;
         public bool IsFeatured { get; set; } = false;
         public int Views { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public DateTime ModifiedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
 
         public int UserId { get; set; }
-        public User? User { get; set; }
-
-        public IList<PhotoCollection>? PhotoCollections { get; set; }
     }
 }

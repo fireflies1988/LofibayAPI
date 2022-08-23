@@ -10,6 +10,7 @@ namespace Domain.Interfaces
         ITagRepository Tags { get; }
         IRefreshTokenRepository RefreshTokens { get; }
         IColorRepository Colors { get; }
+        ICollectionRepository Collections { get; }
         DatabaseFacade Database { get; }
 
         Task<int> SaveChangesAsync();

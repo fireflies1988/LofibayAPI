@@ -19,14 +19,16 @@ namespace LofibayAPI.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
         private readonly IUserService _userService;
+        private readonly ICollectionService _collectionService;
         private readonly IMapper _mapper;
 
-        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService, IMapper mapper, ICollectionService collectionService)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _userService = userService;
             _mapper = mapper;
+            _collectionService = collectionService;
         }
 
         [HttpPost("login")]
@@ -126,6 +128,26 @@ namespace LofibayAPI.Controllers
             }
 
             return Ok(changePasswordResponse);
+        }
+
+        [Authorize]
+        [HttpGet("current/collections")]
+        public async Task<IActionResult> GetCurrentUserCollections()
+        {
+            return Ok(await _collectionService.GetCurrentUserCollectionsAsync());
+        }
+
+        [Authorize]
+        [HttpGet("current/collections/{id}/photos")]
+        public async Task<IActionResult> ViewPhotosOfCurrentUserCollection(int id)
+        {
+            var response = await _collectionService.GetPhotosOfCurrentUserCollectionAsync(id);
+            if (response.Status == StatusTypes.NotFound)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet("{id}")]

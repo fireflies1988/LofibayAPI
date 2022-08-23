@@ -24,6 +24,7 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IPhotoService, PhotoService>();
+builder.Services.AddTransient<ICollectionService, CollectionService>();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddSingleton(new Cloudinary(builder.Configuration!["CloudinaryUrl"]));
 

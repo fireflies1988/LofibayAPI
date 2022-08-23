@@ -22,6 +22,14 @@ namespace LofibayAPI.Mappings
             CreateMap<Photo?, PhotoDetailsResponse>();
             CreateMap<UpdatePhotoRequest, Photo>().ForAllMembers(options => options.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<Photo, UpdatePhotoResponse>();
+            CreateMap<Photo?, CurrentUserPhotoDetailsResponse>();
+
+            CreateMap<CreateCollectionRequest, Collection>();
+            CreateMap<Collection, CreateCollectionResponse>();
+            CreateMap<EditCollectionRequest, Collection>().ForAllMembers(options => options.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<Collection, EditCollectionResponse>();
+            CreateMap<Collection, ViewCollectionResponse>();
+            CreateMap<Collection, CurrentUserCollectionResponse>();
         }
     }
 }

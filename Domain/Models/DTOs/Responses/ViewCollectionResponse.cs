@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.Models.DTOs.Responses
 {
-    public class Collection
+    public class ViewCollectionResponse
     {
         public int CollectionId { get; set; }
         public string? CollectionName { get; set; }
@@ -17,9 +18,6 @@ namespace Domain.Entities
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
-        public int UserId { get; set; }
-        public User? User { get; set; }
-
-        public IList<PhotoCollection>? PhotoCollections { get; set; }
+        public UserInfoResponse? User { get; set; }
     }
 }

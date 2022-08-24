@@ -1,12 +1,12 @@
-﻿using Domain.Models.DTOs.Requests;
-using Domain.Models.DTOs.Responses;
-using Domain.Models.ResponseTypes;
+﻿using Domain.Models.ResponseTypes;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Models.DTOs.Requests.Users;
+using Domain.Models.DTOs.Responses.Users;
 
 namespace Domain.Interfaces.Services
 {

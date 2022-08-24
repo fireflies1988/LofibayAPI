@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Models.DTOs.Responses
+namespace Domain.Models.DTOs.Responses.Users
 {
-    public class LogoutResponse
+    public class ValidateRefreshTokenResponse
     {
+        public int UserId { get; set; }
     }
 }

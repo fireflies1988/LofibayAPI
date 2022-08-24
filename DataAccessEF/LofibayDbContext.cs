@@ -94,8 +94,7 @@ namespace DataAccessEF
                     .OnDelete(DeleteBehavior.NoAction);
 
                 b.HasOne<Photo>(lp => lp.Photo)
-                    .WithMany(p => p.LikedPhotos)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .WithMany(p => p.LikedPhotos);
             });
 
             modelBuilder.Entity<PhotoTag>(b =>

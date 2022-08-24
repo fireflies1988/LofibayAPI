@@ -2,8 +2,10 @@
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
-using Domain.Models.DTOs.Requests;
-using Domain.Models.DTOs.Responses;
+using Domain.Models.DTOs.Requests.Collections;
+using Domain.Models.DTOs.Responses.Collections;
+using Domain.Models.DTOs.Responses.Photos;
+using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 
 namespace DataAccessEF.Services
@@ -70,16 +72,16 @@ namespace DataAccessEF.Services
             Collection? existingCollection = await _unitOfWork.Collections.GetCollectionIncludingPhotosByIdAsync(collectionId, _userService.GetCurrentUserId());
             if (existingCollection == null)
             {
-                return new NotFoundResponse<IEnumerable<CurrentUserPhotoDetailsResponse>> { Message = "Collection not found or collection is private." };
+                return new NotFoundResponse<IEnumerable<CurrentUserPhotoDetailsResponse>> { Message = "Collection not found." };
             }
 
             return new SuccessResponse<IEnumerable<CurrentUserPhotoDetailsResponse>>
             {
-                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<CurrentUserPhotoDetailsResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo))
+                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<CurrentUserPhotoDetailsResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue))
             };
         }
 
-        public async Task<BaseResponse<object>> AddPhotoToCollectionAsync(int photoId, int collectionId)
+        public async Task<BaseResponse<object>> AddOrRemovePhotoToOrFromCollectionAsync(int photoId, int collectionId)
         {
             Collection? existingCollection = await _unitOfWork.Collections.GetFirstOrDefaultAsync(c => c.CollectionId == collectionId, "PhotoCollections");
             if (existingCollection == null)
@@ -92,65 +94,38 @@ namespace DataAccessEF.Services
                 return new UnauthorizedResponse { Message = "You don't own this collection." };
             }
 
-            Photo? existingPhoto = await _unitOfWork.Photos.GetByIdAsync(photoId);
-            if (existingPhoto == null)
-            {
-                return new NotFoundResponse { Message = "Photo not found." };
-            }
-            
-            if (existingCollection.PhotoCollections!.FirstOrDefault(pc => pc.PhotoId == photoId && pc.CollectionId == collectionId) != null)
-            {
-                return new FailResponse { Message = $"This photo already exists in your collection '{existingCollection.CollectionName}'" };
-            }
-            existingCollection.PhotoCollections!.Add(new PhotoCollection
-            {
-                PhotoId = photoId,
-                CollectionId = collectionId
-            });
-            
-            if (await _unitOfWork.SaveChangesAsync() > 0)
-            {
-                return new SuccessResponse { Message = $"This photo has been added to your collection '{existingCollection.CollectionName}'" };
-            }
-
-            return new FailResponse { Message = "Something went wrong, failed to add this photo to your collection." };
-        }
-
-        public async Task<BaseResponse<object>> RemovePhotoFromCollectionAsync(int photoId, int collectionId)
-        {
-            Collection? existingCollection = await _unitOfWork.Collections.GetFirstOrDefaultAsync(c => c.CollectionId == collectionId, "PhotoCollections");
-            if (existingCollection == null)
-            {
-                return new NotFoundResponse { Message = "Collection not found." };
-            }
-
-            if (existingCollection.UserId != _userService.GetCurrentUserId())
-            {
-                return new UnauthorizedResponse { Message = "You don't own this collection." };
-            }
-
-            Photo? existingPhoto = await _unitOfWork.Photos.GetByIdAsync(photoId);
+            Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == photoId && !p.DeletedDate.HasValue);
             if (existingPhoto == null)
             {
                 return new NotFoundResponse { Message = "Photo not found." };
             }
 
-            PhotoCollection? photoCollection = existingCollection.PhotoCollections!.FirstOrDefault(pc => pc.PhotoId == photoId && pc.CollectionId == collectionId);
-            if (photoCollection != null)
+            PhotoCollection? existingPhotoCollection = existingCollection.PhotoCollections!.FirstOrDefault(pc => pc.PhotoId == photoId && pc.CollectionId == collectionId);
+            if (existingPhotoCollection != null)
             {
-                existingCollection.PhotoCollections!.Remove(photoCollection);
+                // remove from collection
+                existingCollection.PhotoCollections!.Remove(existingPhotoCollection);
+                if (await _unitOfWork.SaveChangesAsync() > 0)
+                {
+                    return new SuccessResponse { Message = $"Removed this photo from your collection '{existingCollection.CollectionName}'" };
+                }
             }
             else
             {
-                return new FailResponse { Message = "This photo doesn't exist in your collection." };
+                // add to collection
+                existingCollection.PhotoCollections!.Add(new PhotoCollection
+                {
+                    PhotoId = photoId,
+                    CollectionId = collectionId
+                });
+
+                if (await _unitOfWork.SaveChangesAsync() > 0)
+                {
+                    return new SuccessResponse { Message = $"This photo has been added to your collection '{existingCollection.CollectionName}'" };
+                }
             }
 
-            if (await _unitOfWork.SaveChangesAsync() > 0)
-            {
-                return new SuccessResponse { Message = $"This photo has been removed from your collection '{existingCollection.CollectionName}'" };
-            }
-
-            return new FailResponse { Message = "Something went wrong, failed to remove this photo from your collection." };
+            return new FailResponse { Message = "Something went wrong, unable to add/remove this photo to/from your collection." };
         }
 
         public async Task<BaseResponse<EditCollectionResponse>> UpdateCollectionAsync(int id, EditCollectionRequest editCollectionRequest)
@@ -184,7 +159,7 @@ namespace DataAccessEF.Services
             Collection? existingCollection = await _unitOfWork.Collections.GetFirstOrDefaultAsync(c => c.CollectionId == id && c.IsPrivate == false, "User");
             if (existingCollection == null)
             {
-                return new NotFoundResponse<ViewCollectionResponse> { Message = "Collection not found." };
+                return new NotFoundResponse<ViewCollectionResponse> { Message = "Collection not found or collection is private." };
             }
             existingCollection.Views++;
             await _unitOfWork.SaveChangesAsync();
@@ -205,7 +180,7 @@ namespace DataAccessEF.Services
 
             return new SuccessResponse<IEnumerable<PhotoDetailsResponse>>
             {
-                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<PhotoDetailsResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo))
+                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<PhotoDetailsResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue))
             };
         }
 

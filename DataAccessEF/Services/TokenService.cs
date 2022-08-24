@@ -2,8 +2,8 @@
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
-using Domain.Models.DTOs.Requests;
-using Domain.Models.DTOs.Responses;
+using Domain.Models.DTOs.Requests.Users;
+using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 using Microsoft.Extensions.Configuration;
 

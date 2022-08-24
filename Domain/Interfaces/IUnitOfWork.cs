@@ -11,6 +11,7 @@ namespace Domain.Interfaces
         IRefreshTokenRepository RefreshTokens { get; }
         IColorRepository Colors { get; }
         ICollectionRepository Collections { get; }
+        ILikedPhotoRepository LikedPhotos { get; }
         DatabaseFacade Database { get; }
 
         Task<int> SaveChangesAsync();

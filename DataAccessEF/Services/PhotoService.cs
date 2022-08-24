@@ -5,8 +5,8 @@ using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
-using Domain.Models.DTOs.Requests;
-using Domain.Models.DTOs.Responses;
+using Domain.Models.DTOs.Requests.Photos;
+using Domain.Models.DTOs.Responses.Photos;
 using Domain.Models.ResponseTypes;
 using System.Globalization;
 using System.Net;
@@ -27,6 +27,28 @@ namespace DataAccessEF.Services
             _cloudinary = cloudinary;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+        }
+
+        public async Task<BaseResponse<object>> DeletePhotoAsync(int id)
+        {
+            Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue);
+            if (existingPhoto == null)
+            {
+                return new NotFoundResponse { Message = "Photo not found." };
+            }
+
+            if (existingPhoto.UserId != _userService.GetCurrentUserId())
+            {
+                return new UnauthorizedResponse { Message = "You don't own this photo." };
+            }
+
+            existingPhoto.DeletedDate = DateTime.Now;
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                return new SuccessResponse { Message = "Your photo has been deleted." };
+            }
+
+            return new FailResponse { Message = "Unable to delete your photo." };
         }
 
         public async Task<BaseResponse<PhotoDetailsResponse>> GetPhotoDetailsByIdAsync(int id)
@@ -87,9 +109,47 @@ namespace DataAccessEF.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        public async Task<BaseResponse<object>> LikeOrUnlikePhoto(int id)
+        {
+            Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue);
+            if (existingPhoto == null)
+            {
+                return new NotFoundResponse { Message = "Photo not found." };
+            }
+
+            User? currentUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == _userService.GetCurrentUserId(), "LikedPhotos");
+            var existingLikedPhoto = currentUser?.LikedPhotos?.FirstOrDefault(lp => lp.PhotoId == id);
+            if (existingLikedPhoto == null)
+            {
+                // like
+                currentUser?.LikedPhotos?.Add(new LikedPhoto
+                {
+                    UserId = currentUser.UserId,
+                    PhotoId = id
+                });
+
+                if (await _unitOfWork.SaveChangesAsync() > 0)
+                {
+                    return new SuccessResponse { Message = "You liked this photo." };
+                }
+            }
+            else
+            {
+                // unlike
+                currentUser?.LikedPhotos?.Remove(existingLikedPhoto);
+
+                if (await _unitOfWork.SaveChangesAsync() > 0)
+                {
+                    return new SuccessResponse { Message = "You unliked this photo." };
+                }
+            }
+
+            return new FailResponse { Message = "Something went wrong, unable to like or unlike this photo." };
+        }
+
         public async Task<BaseResponse<UpdatePhotoResponse>> UpdatePhotoAsync(int id, UpdatePhotoRequest updatePhotoRequest)
         {
-            Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id, "PhotoTags");
+            Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue, "PhotoTags");
             if (existingPhoto == null)
             {
                 return new NotFoundResponse<UpdatePhotoResponse> { Message = "Photo not found" };
@@ -258,6 +318,23 @@ namespace DataAccessEF.Services
                     Data = uploadResult
                 };
             }
+        }
+
+        public async Task<BaseResponse<IEnumerable<ViewYourLikedPhotosResponse>>> ViewYourLikedPhotoAsync()
+        {
+            var likedPhotos = (await _unitOfWork.LikedPhotos.GetAsync(lp => lp.UserId == _userService.GetCurrentUserId(), includeProperties: "Photo,User")).Select(lp => lp.Photo).Where(p => !p.DeletedDate.HasValue);
+            return new SuccessResponse<IEnumerable<ViewYourLikedPhotosResponse>>
+            {
+                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<ViewYourLikedPhotosResponse>>(likedPhotos)
+            };
+        }
+
+        public async Task<BaseResponse<IEnumerable<ViewYourUploadedPhotosResponse>>> ViewYourUploadedPhotosAysnc()
+        {
+            var yourUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == _userService.GetCurrentUserId() && !p.DeletedDate.HasValue, includeProperties: "User");
+            return new SuccessResponse<IEnumerable<ViewYourUploadedPhotosResponse>> {
+                Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<ViewYourUploadedPhotosResponse>>(yourUploadedPhotos)
+            };
         }
     }
 }

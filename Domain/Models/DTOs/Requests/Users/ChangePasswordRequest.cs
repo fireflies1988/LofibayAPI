@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Domain.Models.DTOs.Requests
+namespace Domain.Models.DTOs.Requests.Users
 {
     public class ChangePasswordRequest
     {

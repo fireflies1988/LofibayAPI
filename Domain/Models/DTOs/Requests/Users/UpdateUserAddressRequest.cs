@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Models.DTOs.Requests
+namespace Domain.Models.DTOs.Requests.Users
 {
     public class UpdateUserAddressRequest
     {

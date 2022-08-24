@@ -3,8 +3,8 @@ using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
-using Domain.Models.DTOs.Requests;
-using Domain.Models.DTOs.Responses;
+using Domain.Models.DTOs.Requests.Users;
+using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -20,15 +20,17 @@ namespace LofibayAPI.Controllers
         private readonly ITokenService _tokenService;
         private readonly IUserService _userService;
         private readonly ICollectionService _collectionService;
+        private readonly IPhotoService _photoService;
         private readonly IMapper _mapper;
 
-        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService, IMapper mapper, ICollectionService collectionService)
+        public UserController(IUnitOfWork unitOfWork, ITokenService tokenService, IUserService userService, IMapper mapper, ICollectionService collectionService, IPhotoService photoService)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _userService = userService;
             _mapper = mapper;
             _collectionService = collectionService;
+            _photoService = photoService;
         }
 
         [HttpPost("login")]
@@ -139,7 +141,7 @@ namespace LofibayAPI.Controllers
 
         [Authorize]
         [HttpGet("current/collections/{id}/photos")]
-        public async Task<IActionResult> ViewPhotosOfCurrentUserCollection(int id)
+        public async Task<IActionResult> ViewPhotosOfYourCollection(int id)
         {
             var response = await _collectionService.GetPhotosOfCurrentUserCollectionAsync(id);
             if (response.Status == StatusTypes.NotFound)
@@ -148,6 +150,46 @@ namespace LofibayAPI.Controllers
             }
 
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpGet("current/photos")]
+        public async Task<IActionResult> ViewYourUploadedPhotos()
+        {
+            var response = await _photoService.ViewYourUploadedPhotosAysnc();
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpGet("current/liked-photos")]
+        public async Task<IActionResult> ViewYourLikedPhotos()
+        {
+            var response = await _photoService.ViewYourLikedPhotoAsync();
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/collections")]
+        public async Task<IActionResult> ViewCollectionOfUser(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet("{userId}/collections/{collectionId}/photos")]
+        public async Task<IActionResult> ViewPhotosOfUserCollection(int userId, int collectionId)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet("{id}/photos")]
+        public async Task<IActionResult> ViewYourUploadedPhotos(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet("{id}/liked-photos")]
+        public async Task<IActionResult> ViewLikedPhotosOfUser(int id)
+        {
+            throw new NotImplementedException();
         }
 
         [HttpGet("{id}")]

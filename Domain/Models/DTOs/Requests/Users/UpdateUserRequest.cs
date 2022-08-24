@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Domain.Models.DTOs.Requests
+namespace Domain.Models.DTOs.Requests.Users
 {
     public class UpdateUserRequest
     {

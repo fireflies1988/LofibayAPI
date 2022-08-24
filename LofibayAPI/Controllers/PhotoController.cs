@@ -1,6 +1,6 @@
 ﻿using Domain.Enums;
 using Domain.Interfaces.Services;
-using Domain.Models.DTOs.Requests;
+using Domain.Models.DTOs.Requests.Photos;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -85,10 +85,39 @@ namespace LofibayAPI.Controllers
         }
 
         [Authorize]
+        [HttpPost("{id}/like-or-unlike")]
+        public async Task<IActionResult> LikeOrUnlikePhoto(int id)
+        {
+            var response = await _photoService.LikeOrUnlikePhoto(id);
+            switch (response.Status)
+            {
+                case StatusTypes.NotFound:
+                    return NotFound(response);
+                case StatusTypes.Unauthorized:
+                    return Unauthorized(response);
+                case StatusTypes.Success:
+                    return Ok(response);
+                default:
+                    return UnprocessableEntity(response);
+            }
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhoto(int id)
         {
-            throw new NotImplementedException();
+            var response = await _photoService.DeletePhotoAsync(id);
+            switch (response.Status)
+            {
+                case StatusTypes.NotFound:
+                    return NotFound(response);
+                case StatusTypes.Unauthorized:
+                    return Unauthorized(response);
+                case StatusTypes.Success:
+                    return Ok(response);
+                default:
+                    return UnprocessableEntity(response);
+            }
         }
     }
 }

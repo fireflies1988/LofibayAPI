@@ -1,6 +1,6 @@
 ﻿using Domain.Enums;
 using Domain.Interfaces.Services;
-using Domain.Models.DTOs.Requests;
+using Domain.Models.DTOs.Requests.Collections;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -74,28 +74,10 @@ namespace LofibayAPI.Controllers
         }
 
         [Authorize]
-        [HttpPost("{id}/photos")]
-        public async Task<IActionResult> AddPhotoToCollection(int id, [Required]int photoId)
+        [HttpPost("{id}/add-or-remove-photo")]
+        public async Task<IActionResult> AddOrRemovePhotoToOrFromCollection(int id, [Required]int photoId)
         {
-            var response = await _collectionService.AddPhotoToCollectionAsync(photoId, id);
-            switch (response.Status)
-            {
-                case StatusTypes.NotFound:
-                    return NotFound(response);
-                case StatusTypes.Unauthorized:
-                    return Unauthorized(response);
-                case StatusTypes.Success:
-                    return Ok(response);
-                default:
-                    return UnprocessableEntity(response);
-            }
-        }
-
-        [Authorize]
-        [HttpDelete("{id}/photos")]
-        public async Task<IActionResult> RemovePhotoFromCollection(int id, [Required]int photoId)
-        {
-            var response = await _collectionService.RemovePhotoFromCollectionAsync(photoId, id);
+            var response = await _collectionService.AddOrRemovePhotoToOrFromCollectionAsync(photoId, id);
             switch (response.Status)
             {
                 case StatusTypes.NotFound:

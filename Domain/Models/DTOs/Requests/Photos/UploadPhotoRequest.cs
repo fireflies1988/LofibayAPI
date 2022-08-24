@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Domain.Models.DTOs.Requests
+namespace Domain.Models.DTOs.Requests.Photos
 {
     public class UploadPhotoRequest
     {

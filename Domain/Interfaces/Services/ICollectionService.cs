@@ -1,5 +1,7 @@
-﻿using Domain.Models.DTOs.Requests;
-using Domain.Models.DTOs.Responses;
+﻿using Domain.Models.DTOs.Requests.Collections;
+using Domain.Models.DTOs.Responses.Collections;
+using Domain.Models.DTOs.Responses.Photos;
+using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 using System;
 using System.Collections.Generic;
@@ -15,8 +17,7 @@ namespace Domain.Interfaces.Services
         Task<BaseResponse<EditCollectionResponse>> UpdateCollectionAsync(int id, EditCollectionRequest editCollectionRequest);
         Task<BaseResponse<ViewCollectionResponse>> ViewCollectionByIdAsync(int id);
         Task<BaseResponse<IEnumerable<PhotoDetailsResponse>>> ViewPhotosOfCollectionAsync(int collectionId);
-        Task<BaseResponse<object>> AddPhotoToCollectionAsync(int photoId, int collectionId);
-        Task<BaseResponse<object>> RemovePhotoFromCollectionAsync(int photoId, int collectionId);
+        Task<BaseResponse<object>> AddOrRemovePhotoToOrFromCollectionAsync(int photoId, int collectionId);
         Task<BaseResponse<IEnumerable<CurrentUserCollectionResponse>>> GetCurrentUserCollectionsAsync();
         Task<BaseResponse<IEnumerable<CurrentUserPhotoDetailsResponse>>> GetPhotosOfCurrentUserCollectionAsync(int collectionId);
         Task<BaseResponse<object>> DeleteCollectionAsync(int id);

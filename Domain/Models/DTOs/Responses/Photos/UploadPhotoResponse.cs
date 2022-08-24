@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Models.DTOs.Responses
+namespace Domain.Models.DTOs.Responses.Photos
 {
     public class UploadPhotoResponse
     {

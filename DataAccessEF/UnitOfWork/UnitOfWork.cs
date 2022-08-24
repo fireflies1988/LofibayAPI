@@ -20,6 +20,7 @@ namespace DataAccessEF.UnitOfWork
             RefreshTokens = new RefreshTokenRepository(_context);
             Colors = new ColorRepository(_context);
             Collections = new CollectionRepository(_context);
+            LikedPhotos = new LikedPhotoRepository(_context);
         }
 
         public IPhotoRepository Photos { get; }
@@ -28,6 +29,7 @@ namespace DataAccessEF.UnitOfWork
         public IRefreshTokenRepository RefreshTokens { get; }
         public IColorRepository Colors { get; }
         public ICollectionRepository Collections { get; }
+        public ILikedPhotoRepository LikedPhotos { get; }
         public DatabaseFacade Database => _context.Database;
 
         public void Dispose()

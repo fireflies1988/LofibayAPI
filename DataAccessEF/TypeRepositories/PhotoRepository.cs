@@ -18,7 +18,7 @@ namespace DataAccessEF.TypeRepositories
                 .Include(p => p.PhotoColors)!
                     .ThenInclude(pc => pc.ColorAnalyzer)
                 .Include(p => p.PhotoTags)
-                .FirstOrDefaultAsync(p => p.PhotoId == id);
+                .FirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue);
         }
 
         public async Task<Photo?> GetPhotoIncludingColorAnalyzerByIdAsync(int id)

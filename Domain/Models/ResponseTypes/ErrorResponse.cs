@@ -10,7 +10,7 @@ namespace Domain.Models.ResponseTypes
         public override string? Status => StatusTypes.Error;
     }
 
-    public class ErrorReponse : BaseResponse<object>
+    public class ErrorResponse : BaseResponse<object>
     {
         public override string? Status => StatusTypes.Error;
     }

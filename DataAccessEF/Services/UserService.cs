@@ -4,11 +4,13 @@ using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
+using Domain.Models.DTOs.Requests.Emails;
 using Domain.Models.DTOs.Requests.Users;
 using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace DataAccessEF.Services
 {
@@ -16,15 +18,17 @@ namespace DataAccessEF.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
+        private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMapper _mapper;
 
-        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IMapper mapper)
+        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IMapper mapper, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         public int GetCurrentUserId()
@@ -132,25 +136,35 @@ namespace DataAccessEF.Services
             //    };
             //}
 
-            byte[] salt = PasswordHelper.GetSecureSalt();
-            string passwordHash = PasswordHelper.HashUsingPbkdf2(signupRequest.Password!, salt);
+            byte[] passwordSalt = PasswordHelper.GetSecureSalt();
+            string passwordHash = PasswordHelper.HashUsingPbkdf2(signupRequest.Password!, passwordSalt);
+            string verificationToken = TokenHelper.GenerateRefreshToken();
+            byte[] verificationTokenSalt = PasswordHelper.GetSecureSalt();
+            string verificationTokenHash = PasswordHelper.HashUsingPbkdf2(verificationToken, verificationTokenSalt);
             var user = new User
             {
                 Email = signupRequest.Email,
                 Username = signupRequest.Username,
                 PasswordHash = passwordHash,
-                PasswordSalt = Convert.ToBase64String(salt),
+                PasswordSalt = Convert.ToBase64String(passwordSalt),
                 FirstName = signupRequest.FirstName,
                 LastName = signupRequest.LastName,
-                // Active = true // You can save is false and send confirmation email 
-                // to the user, then once the user confirms the email you can make it true
+                VerificationTokenHash = verificationTokenHash,
+                VerificationTokenSalt = Convert.ToBase64String(verificationTokenSalt),
+                VerificationTokenExpDate = DateTime.Now.AddMinutes(5)
             };
             await _unitOfWork.Users.AddAsync(user);
 
             if (await _unitOfWork.SaveChangesAsync() > 0)
             {
+                await _emailService.SendVerificationCode(new VerificationEmailRequest
+                {
+                    To = signupRequest.Email,
+                    VerificationCode = verificationToken
+                });
                 return new SuccessResponse<SignupResponse>
                 {
+                    Message = "Your account has been successfully created. Please check your email for your account verification code and enter it below to confirm your email address.",
                     Data = new SignupResponse
                     {
                         Email = user.Email
@@ -245,6 +259,120 @@ namespace DataAccessEF.Services
             }
 
             return new FailResponse<ChangePasswordResponse> { Message = "Failed to change the password." };
+        }
+
+        public async Task<BaseResponse<object>> VerifyAsync(VerifyAccountRequest verifyAccountRequest)
+        {
+            User? currentUser = await _unitOfWork.Users.GetByIdAsync(GetCurrentUserId());
+            if (currentUser!.Verified)
+            {
+                return new SuccessResponse { Message = "Your account has already been verified." };
+            }
+
+            if (currentUser.VerificationTokenExpDate < DateTime.Now)
+            {
+                return new FailResponse { Message = "The verification code has been expired. Please click 'Resend' to get a new verification code." };
+            }
+
+            string verificationCodeHash = PasswordHelper.HashUsingPbkdf2(verifyAccountRequest.VerificationCode!, Convert.FromBase64String(currentUser.VerificationTokenSalt!));
+            if (currentUser.VerificationTokenHash != verificationCodeHash)
+            {
+                return new FailResponse { Message = "Invalid verification code." };
+            }
+
+            currentUser.Verified = true;
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                return new SuccessResponse { Message = "Your account has been verified." };
+            }
+
+            return new FailResponse { Message = "Something went wrong, unable to verify your accoount." }; 
+        }
+
+        public async Task<BaseResponse<object>> ResendVerificationCode()
+        {
+            User currentUser = (await _unitOfWork.Users.GetByIdAsync(GetCurrentUserId()))!;
+            byte[] newVerificationTokenSalt = PasswordHelper.GetSecureSalt();
+            string newVerificationToken = TokenHelper.GenerateRefreshToken();
+            string newVerificationTokenHash = PasswordHelper.HashUsingPbkdf2(newVerificationToken, newVerificationTokenSalt);
+            currentUser.VerificationTokenHash = newVerificationTokenHash;
+            currentUser.VerificationTokenSalt = Convert.ToBase64String(newVerificationTokenSalt);
+            currentUser.VerificationTokenExpDate = DateTime.Now.AddMinutes(5);
+
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                return await _emailService.SendVerificationCode(new VerificationEmailRequest
+                {
+                    To = currentUser.Email,
+                    VerificationCode = newVerificationToken
+                });
+            }
+
+            return new FailResponse { Message = "Something went wrong." };
+        }
+
+        public async Task<BaseResponse<object>> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest)
+        {
+            
+            User? existingUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.Email == forgotPasswordRequest.Email && !u.DeletedDate.HasValue);
+            if (existingUser == null)
+            {
+                return new FailResponse { Message = "Invalid email." };
+            }
+
+            if (!existingUser.Verified)
+            {
+                return new FailResponse { Message = "This email is not verified." };
+            }
+
+            byte[] newResetTokenSalt = PasswordHelper.GetSecureSalt();
+            string newPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            string newResetToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            string newResetTokenHash = PasswordHelper.HashUsingPbkdf2(newResetToken, newResetTokenSalt);
+            existingUser.ResetTokenHash = newResetTokenHash;
+            existingUser.ResetTokenSalt = Convert.ToBase64String(newResetTokenSalt);
+            existingUser.ResetTokenExpDate = DateTime.Now.AddDays(5);
+
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                return await _emailService.SendEmailAsync(new EmailRequest
+                {
+                    To = forgotPasswordRequest.Email,
+                    Subject = "Lofibay - Forgot password",
+                    Body = @$"<p>Your new password: <b>{newPassword}</b></p>
+                        <p>Please click this <a href='https://localhost:7039/api/users/password/reset?email={forgotPasswordRequest.Email}&password={newPassword}&resetToken={newResetToken}'>link</a>
+                        to confirm this reset password request.</p>
+                        <p>Just ignore this email if you didn't request this."
+                });
+            }
+
+            return new FailResponse { Message = "Something went wrong, unable to send forgot password email." };
+        }
+
+        public async Task<BaseResponse<object>> ResetPasswordAsync(string email, string password, string resetToken)
+        {
+            User existingUser = (await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.Email == email && !u.DeletedDate.HasValue))!;
+            string resetTokenHash = PasswordHelper.HashUsingPbkdf2(resetToken, Convert.FromBase64String(existingUser.ResetTokenSalt!));
+            if (existingUser.ResetTokenHash != resetTokenHash)
+            {
+                return new FailResponse { Message = "Invalid reset token." };
+            }
+
+            if (existingUser.ResetTokenExpDate < DateTime.Now)
+            {
+                return new FailResponse { Message = "Reset token expired." };
+            }
+            
+            byte[] newPasswordSalt = PasswordHelper.GetSecureSalt();
+            string newPasswordHash = PasswordHelper.HashUsingPbkdf2(password, newPasswordSalt);
+            existingUser.PasswordHash = newPasswordHash;
+            existingUser.PasswordSalt = Convert.ToBase64String(newPasswordSalt);
+            if (await _unitOfWork.SaveChangesAsync() > 0)
+            {
+                return new SuccessResponse { Message = "Your password has been reset. Please log in with your new password." };
+            }
+
+            return new FailResponse { Message = "Failed to reset your password." };
         }
     }
 }

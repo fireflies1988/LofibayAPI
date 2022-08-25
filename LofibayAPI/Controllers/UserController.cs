@@ -45,6 +45,33 @@ namespace LofibayAPI.Controllers
             return Ok(loginResponse);
         }
 
+        [Authorize]
+        [HttpPost("current/verify")]
+        public async Task<IActionResult> Verify(VerifyAccountRequest verifyAccountRequest)
+        {
+            var response = await _userService.VerifyAsync(verifyAccountRequest);
+            if (response.Status == StatusTypes.Fail)
+            {
+                return UnprocessableEntity(response);
+            }
+
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("current/resend-verification-code")]
+        public async Task<IActionResult> ResendVerificationCode()
+        {
+            var response = await _userService.ResendVerificationCode();
+            if (response.Status == StatusTypes.Fail)
+            {
+                return UnprocessableEntity(response);
+            }
+
+            return Ok(response);
+        }
+
+
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenRequest refreshTokenRequest)
         {
@@ -130,6 +157,30 @@ namespace LofibayAPI.Controllers
             }
 
             return Ok(changePasswordResponse);
+        }
+
+        [HttpPost("password/forgot")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
+        {
+            var response = await _userService.ForgotPasswordAsync(forgotPasswordRequest);
+            if (response.Status == StatusTypes.Fail)
+            {
+                return UnprocessableEntity(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("Password/reset")]
+        public async Task<IActionResult> ResetPassword(string email, string password, string resetToken)
+        {
+            var response = await _userService.ResetPasswordAsync(email, password, resetToken);
+            if (response.Status == StatusTypes.Fail)
+            {
+                return UnprocessableEntity(response);
+            }
+
+            return Ok(response);
         }
 
         [Authorize]

@@ -12,6 +12,13 @@ namespace Domain.Entities
         public string? Username { get; set; }
         public string? PasswordHash { get; set; }
         public string? PasswordSalt { get; set; }
+        public string? VerificationTokenHash { get; set; }
+        public string? VerificationTokenSalt { get; set; }
+        public DateTime VerificationTokenExpDate { get; set; }
+        public string? ResetTokenHash { get; set; }
+        public string? ResetTokenSalt { get; set; }
+        public DateTime ResetTokenExpDate { get; set; }
+        public bool Verified { get; set; } = false;
         public string? AvatarUrl { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

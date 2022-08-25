@@ -38,7 +38,7 @@ namespace LofibayAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse { Message = ex.Message });
             }
         }
 
@@ -56,7 +56,7 @@ namespace LofibayAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse { Message = ex.Message });
             }
         }
 
@@ -80,7 +80,7 @@ namespace LofibayAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorReponse { Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse { Message = ex.Message });
             }
         }
 

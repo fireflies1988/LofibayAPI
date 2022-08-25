@@ -36,6 +36,22 @@ namespace DataAccessEF
                     .IsRequired()
                     .HasMaxLength(255);
 
+                b.Property(u => u.VerificationTokenHash)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.Property(u => u.VerificationTokenSalt)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.Property(u => u.ResetTokenHash)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                b.Property(u => u.ResetTokenSalt)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
                 b.HasOne<UserGender>(u => u.Gender)
                     .WithMany(ug => ug.Users)
                     .HasForeignKey(u => u.GenderId);

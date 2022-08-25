@@ -205,5 +205,39 @@ namespace DataAccessEF.Services
 
             return new FailResponse { Message = "Something went wrong, unable to delete your collection." };
         }
+
+        public async Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewUserCollectionsAsync(int userId)
+        {
+            if ((await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == userId && !u.DeletedDate.HasValue)) == null)
+            {
+                return new NotFoundResponse<IEnumerable<ViewUserCollectionsResponse>> { Message = "User doesn't exist." };
+            }
+
+            return new SuccessResponse<IEnumerable<ViewUserCollectionsResponse>>
+            {
+                Data = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(
+                    await _unitOfWork.Collections.GetAsync(c => c.UserId == userId && !c.IsPrivate, includeProperties: "User"))
+            };
+        }
+
+        public async Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewPhotosOfUserCollectionAsync(int userId, int collectionId)
+        {
+            User? existingUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == userId && !u.DeletedDate.HasValue);
+            if (existingUser == null)
+            {
+                return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "User doesn't exist." };
+            }
+
+            Collection? existingCollection = await _unitOfWork.Collections.GetCollectionIncludingPhotosByIdAsync(collectionId, userId);
+            if (existingCollection == null)
+            {
+                return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "Collection not found." };
+            }
+
+            return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
+            {
+                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<BasicPhotoInfoResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo))
+            };
+        }
     }
 }

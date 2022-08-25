@@ -31,6 +31,7 @@ namespace LofibayAPI.Mappings
             CreateMap<Photo?, CurrentUserPhotoDetailsResponse>();
             CreateMap<Photo?, ViewYourLikedPhotosResponse>();
             CreateMap<Photo, ViewYourUploadedPhotosResponse>();
+            CreateMap<Photo?, BasicPhotoInfoResponse>();
 
             CreateMap<CreateCollectionRequest, Collection>();
             CreateMap<Collection, CreateCollectionResponse>();
@@ -38,6 +39,7 @@ namespace LofibayAPI.Mappings
             CreateMap<Collection, EditCollectionResponse>();
             CreateMap<Collection, ViewCollectionResponse>();
             CreateMap<Collection, CurrentUserCollectionResponse>();
+            CreateMap<Collection, ViewUserCollectionsResponse>();
         }
     }
 }

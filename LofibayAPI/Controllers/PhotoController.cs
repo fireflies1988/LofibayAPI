@@ -88,7 +88,7 @@ namespace LofibayAPI.Controllers
         [HttpPost("{id}/like-or-unlike")]
         public async Task<IActionResult> LikeOrUnlikePhoto(int id)
         {
-            var response = await _photoService.LikeOrUnlikePhoto(id);
+            var response = await _photoService.LikeOrUnlikePhotoAsync(id);
             switch (response.Status)
             {
                 case StatusTypes.NotFound:

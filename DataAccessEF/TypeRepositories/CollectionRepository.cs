@@ -30,7 +30,7 @@ namespace DataAccessEF.TypeRepositories
                 .Include(c => c.PhotoCollections)!
                     .ThenInclude(pc => pc.Photo)
                         .ThenInclude(p => p.PhotoTags)
-                .FirstOrDefaultAsync(c => c.UserId == userId && c.CollectionId == collectionId);
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.CollectionId == collectionId && c.IsPrivate == false);
         }
     }
 }

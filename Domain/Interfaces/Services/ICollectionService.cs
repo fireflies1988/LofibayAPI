@@ -21,5 +21,7 @@ namespace Domain.Interfaces.Services
         Task<BaseResponse<IEnumerable<CurrentUserCollectionResponse>>> GetCurrentUserCollectionsAsync();
         Task<BaseResponse<IEnumerable<CurrentUserPhotoDetailsResponse>>> GetPhotosOfCurrentUserCollectionAsync(int collectionId);
         Task<BaseResponse<object>> DeleteCollectionAsync(int id);
+        Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewUserCollectionsAsync(int userId);
+        Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewPhotosOfUserCollectionAsync(int userId, int collectionId);
     }
 }

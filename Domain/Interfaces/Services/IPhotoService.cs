@@ -14,7 +14,9 @@ namespace Domain.Interfaces.Services
         Task InsertTagsAsync(Photo photo, IList<string> tags);
         Task<BaseResponse<IEnumerable<ViewYourUploadedPhotosResponse>>> ViewYourUploadedPhotosAysnc();
         Task<BaseResponse<IEnumerable<ViewYourLikedPhotosResponse>>> ViewYourLikedPhotoAsync();
-        Task<BaseResponse<object>> LikeOrUnlikePhoto(int id);
+        Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewUserUploadedPhotosAsync(int id);
+        Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewLikedPhotosOfUserAsync(int id);
+        Task<BaseResponse<object>> LikeOrUnlikePhotoAsync(int id);
         Task<BaseResponse<object>> DeletePhotoAsync(int id);
     }
 }

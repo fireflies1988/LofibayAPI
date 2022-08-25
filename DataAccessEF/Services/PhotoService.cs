@@ -109,7 +109,7 @@ namespace DataAccessEF.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<BaseResponse<object>> LikeOrUnlikePhoto(int id)
+        public async Task<BaseResponse<object>> LikeOrUnlikePhotoAsync(int id)
         {
             Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue);
             if (existingPhoto == null)
@@ -318,6 +318,36 @@ namespace DataAccessEF.Services
                     Data = uploadResult
                 };
             }
+        }
+
+        public async Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewLikedPhotosOfUserAsync(int id)
+        {
+            User? existingUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == id && !u.DeletedDate.HasValue);
+            if (existingUser == null)
+            {
+                return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "User doesn't exist." };
+            }
+
+            var likedPhotos = (await _unitOfWork.LikedPhotos.GetAsync(lp => lp.UserId == id, includeProperties: "Photo,User")).Select(lp => lp.Photo).Where(p => !p.DeletedDate.HasValue);
+            return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
+            {
+                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<BasicPhotoInfoResponse>>(likedPhotos)
+            };
+        }
+
+        public async Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewUserUploadedPhotosAsync(int id)
+        {
+            User? existingUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == id && !u.DeletedDate.HasValue);
+            if (existingUser == null)
+            {
+                return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "User doesn't exist." };
+            }
+
+            var userUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == id && !p.DeletedDate.HasValue, includeProperties: "User");
+            return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
+            {
+                Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(userUploadedPhotos)
+            };
         }
 
         public async Task<BaseResponse<IEnumerable<ViewYourLikedPhotosResponse>>> ViewYourLikedPhotoAsync()

@@ -220,27 +220,47 @@ namespace LofibayAPI.Controllers
         }
 
         [HttpGet("{id}/collections")]
-        public async Task<IActionResult> ViewCollectionOfUser(int id)
+        public async Task<IActionResult> ViewCollectionsOfUser(int id)
         {
-            throw new NotImplementedException();
+            var response = await _collectionService.ViewUserCollectionsAsync(id);
+            if (response.Status == StatusTypes.NotFound)
+            {
+                return UnprocessableEntity(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{userId}/collections/{collectionId}/photos")]
         public async Task<IActionResult> ViewPhotosOfUserCollection(int userId, int collectionId)
         {
-            throw new NotImplementedException();
+            var response = await _collectionService.ViewPhotosOfUserCollectionAsync(userId, collectionId);
+            if (response.Status == StatusTypes.NotFound)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}/photos")]
-        public async Task<IActionResult> ViewYourUploadedPhotos(int id)
+        public async Task<IActionResult> ViewUserUploadedPhoto(int id)
         {
-            throw new NotImplementedException();
+            var response = await _photoService.ViewUserUploadedPhotosAsync(id);
+            if (response.Status == StatusTypes.NotFound)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}/liked-photos")]
         public async Task<IActionResult> ViewLikedPhotosOfUser(int id)
         {
-            throw new NotImplementedException();
+            var response = await _photoService.ViewLikedPhotosOfUserAsync(id);
+            if (response.Status == StatusTypes.NotFound)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]

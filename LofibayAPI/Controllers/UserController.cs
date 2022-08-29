@@ -90,10 +90,13 @@ namespace LofibayAPI.Controllers
             }
 
             var tokenResponse = await _tokenService.GenerateTokensAsync(await _unitOfWork.Users.GetFirstOrDefaultAsync(filter: u => u.UserId == validateRefreshTokenResponse.Data!.UserId, includeProperties: "Role,RefreshTokens"));
-            return Ok(new
+            return Ok(new SuccessResponse
             {
-                AccessToken = tokenResponse?.Item1,
-                RefreshToken = tokenResponse?.Item2
+                Data = new
+                {
+                    AccessToken = tokenResponse?.Item1,
+                    RefreshToken = tokenResponse?.Item2
+                }
             });
         }
 
@@ -129,13 +132,13 @@ namespace LofibayAPI.Controllers
         {
             return Ok(new SuccessResponse<UserInfoResponse>
             {
-                Data = _mapper.Map<UserInfoResponse>(await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == _userService.GetCurrentUserId(), includeProperties: "Address,Gender"))
+                Data = _mapper.Map<UserInfoResponse>(await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == _userService.GetCurrentUserId(), includeProperties: "Address,Gender,Role"))
             });
         }
 
         [Authorize]
         [HttpPatch("current")]
-        public async Task<IActionResult> EditProfile(UpdateUserRequest updateUserRequest)
+        public async Task<IActionResult> EditProfile([FromForm]UpdateUserRequest updateUserRequest)
         {
             var updateUserResponse = await _userService.UpdateUserAsync(updateUserRequest);
             if (updateUserResponse.Status == StatusTypes.Fail)

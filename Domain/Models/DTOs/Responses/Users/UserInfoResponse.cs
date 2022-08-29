@@ -24,5 +24,7 @@ namespace Domain.Models.DTOs.Responses.Users
         public UserAddress? Address { get; set; }
 
         public UserGender? Gender { get; set; }
+
+        public Role? Role { get; set; }
     }
 }

@@ -19,7 +19,6 @@ namespace LofibayAPI.Controllers
             _logger = logger;
         }
 
-        [Authorize]
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {

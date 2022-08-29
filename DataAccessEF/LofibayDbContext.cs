@@ -44,14 +44,6 @@ namespace DataAccessEF
                     .IsRequired()
                     .HasMaxLength(255);
 
-                b.Property(u => u.ResetTokenHash)
-                    .IsRequired()
-                    .HasMaxLength(255);
-
-                b.Property(u => u.ResetTokenSalt)
-                    .IsRequired()
-                    .HasMaxLength(255);
-
                 b.HasOne<UserGender>(u => u.Gender)
                     .WithMany(ug => ug.Users)
                     .HasForeignKey(u => u.GenderId);
@@ -59,6 +51,8 @@ namespace DataAccessEF
 
             modelBuilder.Entity<Photo>(b =>
             {
+                b.Ignore(p => p.DownloadUrl);
+
                 b.Property(p => p.PhotoUrl)
                     .IsRequired()
                     .HasMaxLength(255);

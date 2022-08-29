@@ -13,6 +13,7 @@ namespace Domain.Models.DTOs.Responses.Photos
         public int PhotoId { get; set; }
         public string? PublicId { get; set; }
         public string? PhotoUrl { get; set; }
+        public string? DownloadUrl { get; set; }
         public string? Description { get; set; }
         public string? Location { get; set; }
         public DateTime? TakenAt { get; set; }

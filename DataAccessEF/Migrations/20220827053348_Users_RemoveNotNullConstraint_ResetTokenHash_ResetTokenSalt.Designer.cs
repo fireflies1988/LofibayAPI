@@ -4,6 +4,7 @@ using DataAccessEF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessEF.Migrations
 {
     [DbContext(typeof(LofibayDbContext))]
-    partial class LofibayDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220827053348_Users_RemoveNotNullConstraint_ResetTokenHash_ResetTokenSalt")]
+    partial class Users_RemoveNotNullConstraint_ResetTokenHash_ResetTokenSalt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,7 +60,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Collections", (string)null);
+                    b.ToTable("Collections");
                 });
 
             modelBuilder.Entity("Domain.Entities.Color", b =>
@@ -69,7 +71,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("Colors", (string)null);
+                    b.ToTable("Colors");
                 });
 
             modelBuilder.Entity("Domain.Entities.ColorAnalyzer", b =>
@@ -87,7 +89,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasKey("ColorAnalyzerId");
 
-                    b.ToTable("ColorAnalyzers", (string)null);
+                    b.ToTable("ColorAnalyzers");
 
                     b.HasData(
                         new
@@ -114,7 +116,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("PhotoId");
 
-                    b.ToTable("LikedPhotos", (string)null);
+                    b.ToTable("LikedPhotos");
                 });
 
             modelBuilder.Entity("Domain.Entities.Photo", b =>
@@ -202,7 +204,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Photos", (string)null);
+                    b.ToTable("Photos");
                 });
 
             modelBuilder.Entity("Domain.Entities.PhotoCollection", b =>
@@ -217,7 +219,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("CollectionId");
 
-                    b.ToTable("PhotoCollections", (string)null);
+                    b.ToTable("PhotoCollections");
                 });
 
             modelBuilder.Entity("Domain.Entities.PhotoColor", b =>
@@ -240,7 +242,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("ColorName");
 
-                    b.ToTable("PhotoColors", (string)null);
+                    b.ToTable("PhotoColors");
                 });
 
             modelBuilder.Entity("Domain.Entities.PhotoTag", b =>
@@ -255,7 +257,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("TagName");
 
-                    b.ToTable("PhotoTags", (string)null);
+                    b.ToTable("PhotoTags");
                 });
 
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
@@ -289,7 +291,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
@@ -307,7 +309,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -330,7 +332,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -428,7 +430,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserAddress", b =>
@@ -465,7 +467,7 @@ namespace DataAccessEF.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserAddresses", (string)null);
+                    b.ToTable("UserAddresses");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserFollower", b =>
@@ -480,7 +482,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasIndex("FollowerId");
 
-                    b.ToTable("UserFollowers", (string)null);
+                    b.ToTable("UserFollowers");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserGender", b =>
@@ -496,7 +498,7 @@ namespace DataAccessEF.Migrations
 
                     b.HasKey("GenderId");
 
-                    b.ToTable("UserGenders", (string)null);
+                    b.ToTable("UserGenders");
 
                     b.HasData(
                         new

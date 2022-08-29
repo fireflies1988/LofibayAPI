@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Common.Helpers;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
@@ -177,7 +178,7 @@ namespace DataAccessEF.Services
             ImageUploadParams uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(_userService.GetCurrentUserId().ToString(), uploadPhotoRequest.ImageFile!.OpenReadStream()),
-                Folder = $"LofibayStorageTest/{_userService.GetCurrentUserId()}",
+                Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{_userService.GetCurrentUserId()}",
                 Faces = true,
                 Colors = true,
                 Phash = true,
@@ -328,7 +329,7 @@ namespace DataAccessEF.Services
                 return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "User doesn't exist." };
             }
 
-            var likedPhotos = (await _unitOfWork.LikedPhotos.GetAsync(lp => lp.UserId == id, includeProperties: "Photo,User")).Select(lp => lp.Photo).Where(p => !p.DeletedDate.HasValue);
+            var likedPhotos = await _unitOfWork.LikedPhotos.GetPhotosThatUserLikedAsync(id);
             return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
             {
                 Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<BasicPhotoInfoResponse>>(likedPhotos)
@@ -343,7 +344,7 @@ namespace DataAccessEF.Services
                 return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "User doesn't exist." };
             }
 
-            var userUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == id && !p.DeletedDate.HasValue, includeProperties: "User");
+            var userUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == id && !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos");
             return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
             {
                 Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(userUploadedPhotos)

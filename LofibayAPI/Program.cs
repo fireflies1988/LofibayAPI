@@ -17,8 +17,8 @@ ConfigurationHelper.Initialize(builder.Configuration);
 // Add services to the container.
 
 builder.Services.AddControllers();
-//builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Lofibay")));
-builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LofibayDev")));
+builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Lofibay")));
+//builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LofibayDev")));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITokenService, TokenService>();
@@ -28,6 +28,10 @@ builder.Services.AddTransient<ICollectionService, CollectionService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddSingleton(new Cloudinary(builder.Configuration!["CloudinaryUrl"]));
+builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
+{
+    builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+}));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -69,6 +73,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("corsapp");
 
 app.UseHttpsRedirection();
 

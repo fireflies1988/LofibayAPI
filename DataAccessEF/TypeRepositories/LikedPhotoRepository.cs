@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,16 @@ namespace DataAccessEF.TypeRepositories
     {
         public LikedPhotoRepository(LofibayDbContext context) : base(context)
         {
+        }
+
+        public async Task<IEnumerable<Photo?>> GetPhotosThatUserLikedAsync(int userId)
+        {
+            return await Context.LikedPhotos!
+                .Include(lp => lp.Photo)
+                    .ThenInclude(p => p.User)
+                .Where(lp => lp.UserId == userId)
+                .Select(lp => lp.Photo)
+                .Where(p => !p.DeletedDate.HasValue).ToListAsync();
         }
     }
 }

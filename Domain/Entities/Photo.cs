@@ -7,6 +7,16 @@ namespace Domain.Entities
         public int PhotoId { get; set; }
         public string? PublicId { get; set; }
         public string? PhotoUrl { get; set; }
+        public string? DownloadUrl
+        {
+            get
+            {
+                int insertIndex = PhotoUrl!.IndexOf("upload/") + "upload/".Length;
+                string suggestedFileName = $"lofibay-{User?.FirstName}-{User?.LastName}-{((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds()}";
+                string downloadUrl = PhotoUrl.Insert(insertIndex, $"fl_attachment:{suggestedFileName}/");
+                return downloadUrl;
+            }
+        }
         public string? Description { get; set; }
         public string? Location { get; set; }
         public DateTime? TakenAt { get; set; }

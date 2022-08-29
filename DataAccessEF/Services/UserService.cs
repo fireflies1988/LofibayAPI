@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Common.Helpers;
 using Domain.Entities;
 using Domain.Enums;
@@ -9,6 +11,7 @@ using Domain.Models.DTOs.Requests.Users;
 using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -20,15 +23,17 @@ namespace DataAccessEF.Services
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly Cloudinary _cloudinary;
         private readonly IMapper _mapper;
 
-        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IMapper mapper, IEmailService emailService)
+        public UserService(IUnitOfWork unitOfWork, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, IMapper mapper, IEmailService emailService, Cloudinary cloudinary)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
             _emailService = emailService;
+            _cloudinary = cloudinary;
         }
 
         public int GetCurrentUserId()
@@ -180,7 +185,7 @@ namespace DataAccessEF.Services
 
         public async Task<BaseResponse<UserInfoResponse>> UpdateUserAsync(UpdateUserRequest updateUserRequest)
         {
-            User? currentUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(filter: u => u.UserId == GetCurrentUserId(), includeProperties: "Address");
+            User? currentUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(filter: u => u.UserId == GetCurrentUserId(), includeProperties: "Address,Gender");
 
             if (updateUserRequest.Email != null && updateUserRequest.Email != currentUser?.Email)
             {
@@ -207,6 +212,26 @@ namespace DataAccessEF.Services
             }
 
             currentUser = _mapper.Map<UpdateUserRequest, User>(updateUserRequest, currentUser!);
+            currentUser.ModifiedDate = DateTime.Now;
+
+            if (updateUserRequest.ImageFile != null)
+            {
+                ImageUploadParams uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(GetCurrentUserId().ToString(), updateUserRequest.ImageFile!.OpenReadStream()),
+                    Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{GetCurrentUserId()}",
+                    Faces = true,
+                    Colors = true,
+                    Phash = true,
+                    ImageMetadata = true
+                };
+                ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                if (uploadResult.StatusCode == HttpStatusCode.OK)
+                {
+                    currentUser.AvatarUrl = uploadResult.SecureUrl.ToString();
+                }
+            }
+
             if (await _unitOfWork.SaveChangesAsync() > 0)
             {
                 return new SuccessResponse<UserInfoResponse>

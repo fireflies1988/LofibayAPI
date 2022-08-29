@@ -9,5 +9,6 @@ namespace Domain.Interfaces.Repositories
 {
     public interface ILikedPhotoRepository : IGenericRepository<LikedPhoto>
     {
+        Task<IEnumerable<Photo?>> GetPhotosThatUserLikedAsync(int userId);
     }
 }

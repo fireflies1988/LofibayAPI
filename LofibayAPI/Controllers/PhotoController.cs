@@ -1,6 +1,10 @@
-﻿using Domain.Enums;
+﻿using AutoMapper;
+using Domain.Entities;
+using Domain.Enums;
+using Domain.Interfaces;
 using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests.Photos;
+using Domain.Models.DTOs.Responses.Photos;
 using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +16,14 @@ namespace LofibayAPI.Controllers
     public class PhotoController : ControllerBase
     {
         private readonly IPhotoService _photoService;
+        private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PhotoController(IPhotoService photoService)
+        public PhotoController(IPhotoService photoService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _photoService = photoService;
+            _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         [Authorize]
@@ -40,6 +48,15 @@ namespace LofibayAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse { Message = ex.Message });
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPhotos()
+        {
+            return Ok(new SuccessResponse
+            {
+                Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(await _unitOfWork.Photos.GetAsync(p => !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos"))
+            });
         }
 
         [HttpGet("{id}")]

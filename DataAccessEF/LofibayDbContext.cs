@@ -60,6 +60,10 @@ namespace DataAccessEF
                 b.Property(p => p.PublicId).IsRequired();
 
                 b.Property(p => p.Format).IsRequired();
+
+                b.HasOne(p => p.User)
+                    .WithMany(u => u.Photos)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Tag>(b =>
@@ -117,8 +121,7 @@ namespace DataAccessEF
                 b.HasKey(pc => new { pc.PhotoId, pc.CollectionId });
 
                 b.HasOne<Photo>(pc => pc.Photo)
-                    .WithMany(p => p.PhotoCollections)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .WithMany(p => p.PhotoCollections);
             });
 
             modelBuilder.Entity<UserFollower>(b =>

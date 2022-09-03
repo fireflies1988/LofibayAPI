@@ -228,7 +228,12 @@ namespace DataAccessEF.Services
                 ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
                 if (uploadResult.StatusCode == HttpStatusCode.OK)
                 {
+                    if (currentUser.AvatarUrlPublicId != null)
+                    {
+                        await _cloudinary.DestroyAsync(new DeletionParams(currentUser.AvatarUrlPublicId));
+                    }
                     currentUser.AvatarUrl = uploadResult.SecureUrl.ToString();
+                    currentUser.AvatarUrlPublicId = uploadResult.PublicId;
                 }
             }
 
@@ -398,6 +403,33 @@ namespace DataAccessEF.Services
             }
 
             return new FailResponse { Message = "Failed to reset your password." };
+        }
+
+        public async Task<BaseResponse<UserInfoResponse>> ViewUserProfileDetails(int id)
+        {
+            User? existingUser = await _unitOfWork.Users.GetUserProfileDetails(id);
+            if (existingUser == null)
+            {
+                return new NotFoundResponse<UserInfoResponse> { Message = "User not found." };
+            }
+
+            UserInfoResponse userInfoResponse = _mapper.Map<UserInfoResponse>(existingUser);
+            userInfoResponse.NumOfUploadedPhotos = existingUser.Photos!.Where(p => !p.DeletedDate.HasValue).Count();
+            userInfoResponse.NumOfLikedPhotos = existingUser.LikedPhotos!.Where(lp => !lp.Photo!.DeletedDate.HasValue).Count();
+            userInfoResponse.NumOfCollections = existingUser.Collections!.Where(c => c.IsPrivate == false).Count();
+
+            return new SuccessResponse<UserInfoResponse> { Data = userInfoResponse };
+        }
+
+        public async Task<BaseResponse<UserInfoResponse>> ViewCurrentUserProfileDetails()
+        {
+            User? currentUser = await _unitOfWork.Users.GetUserProfileDetails(GetCurrentUserId());
+            UserInfoResponse userInfoResponse = _mapper.Map<UserInfoResponse>(currentUser);
+            userInfoResponse.NumOfUploadedPhotos = currentUser!.Photos!.Where(p => !p.DeletedDate.HasValue).Count();
+            userInfoResponse.NumOfLikedPhotos = currentUser.LikedPhotos!.Where(lp => !lp.Photo!.DeletedDate.HasValue).Count();
+            userInfoResponse.NumOfCollections = currentUser.Collections!.Count();
+
+            return new SuccessResponse<UserInfoResponse> { Data = userInfoResponse };
         }
     }
 }

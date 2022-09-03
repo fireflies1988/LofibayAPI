@@ -23,5 +23,7 @@ namespace Domain.Interfaces.Services
         Task<BaseResponse<ChangePasswordResponse>> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest);
         Task<BaseResponse<object>> ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest);
         Task<BaseResponse<object>> ResetPasswordAsync(string email, string password, string resetToken);
+        Task<BaseResponse<UserInfoResponse>> ViewUserProfileDetails(int id);
+        Task<BaseResponse<UserInfoResponse>> ViewCurrentUserProfileDetails();
     }
 }

@@ -20,6 +20,9 @@ namespace Domain.Models.DTOs.Responses.Users
         public string? Biography { get; set; }
         public DateTime JoinDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public int NumOfUploadedPhotos { get; set; }
+        public int NumOfLikedPhotos { get; set; }
+        public int NumOfCollections { get; set; }
 
         public UserAddress? Address { get; set; }
 

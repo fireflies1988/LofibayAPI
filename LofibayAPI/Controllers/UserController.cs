@@ -130,10 +130,8 @@ namespace LofibayAPI.Controllers
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
-            return Ok(new SuccessResponse<UserInfoResponse>
-            {
-                Data = _mapper.Map<UserInfoResponse>(await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == _userService.GetCurrentUserId(), includeProperties: "Address,Gender,Role"))
-            });
+            var response = await _userService.ViewCurrentUserProfileDetails();
+            return Ok(response);
         }
 
         [Authorize]
@@ -188,9 +186,22 @@ namespace LofibayAPI.Controllers
 
         [Authorize]
         [HttpGet("current/collections")]
-        public async Task<IActionResult> GetCurrentUserCollections()
+        public async Task<IActionResult> ViewYourCollections()
         {
-            return Ok(await _collectionService.GetCurrentUserCollectionsAsync());
+            return Ok(await _collectionService.ViewCurrentUserCollectionsAsync());
+        }
+
+        [Authorize]
+        [HttpGet("current/collections/{id}")]
+        public async Task<IActionResult> ViewYourCollection(int id)
+        {
+            var response = await _collectionService.ViewYourCollectionByIdAsync(id);
+            if (response.Status == StatusTypes.NotFound)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [Authorize]
@@ -223,23 +234,12 @@ namespace LofibayAPI.Controllers
         }
 
         [HttpGet("{id}/collections")]
-        public async Task<IActionResult> ViewCollectionsOfUser(int id)
+        public async Task<IActionResult> ViewUserCollections(int id)
         {
             var response = await _collectionService.ViewUserCollectionsAsync(id);
             if (response.Status == StatusTypes.NotFound)
             {
                 return UnprocessableEntity(response);
-            }
-            return Ok(response);
-        }
-
-        [HttpGet("{userId}/collections/{collectionId}/photos")]
-        public async Task<IActionResult> ViewPhotosOfUserCollection(int userId, int collectionId)
-        {
-            var response = await _collectionService.ViewPhotosOfUserCollectionAsync(userId, collectionId);
-            if (response.Status == StatusTypes.NotFound)
-            {
-                return NotFound(response);
             }
             return Ok(response);
         }
@@ -267,12 +267,15 @@ namespace LofibayAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserInfoById(int id)
+        public async Task<IActionResult> ViewUserProfileDetails(int id)
         {
-            return Ok(new SuccessResponse<UserInfoResponse>
+            var response = await _userService.ViewUserProfileDetails(id);
+            if (response.Status == StatusTypes.NotFound)
             {
-                Data = _mapper.Map<UserInfoResponse>(await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == id, includeProperties: "Address,Gender"))
-            });
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
     }
 }

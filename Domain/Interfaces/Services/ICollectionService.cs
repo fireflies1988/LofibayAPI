@@ -16,12 +16,13 @@ namespace Domain.Interfaces.Services
         Task<BaseResponse<CreateCollectionResponse>> CreateNewCollectionAsync(CreateCollectionRequest createCollectionRequest);
         Task<BaseResponse<EditCollectionResponse>> UpdateCollectionAsync(int id, EditCollectionRequest editCollectionRequest);
         Task<BaseResponse<ViewCollectionResponse>> ViewCollectionByIdAsync(int id);
-        Task<BaseResponse<IEnumerable<PhotoDetailsResponse>>> ViewPhotosOfCollectionAsync(int collectionId);
+        Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewPhotosOfCollectionAsync(int collectionId);
         Task<BaseResponse<object>> AddOrRemovePhotoToOrFromCollectionAsync(int photoId, int collectionId);
-        Task<BaseResponse<IEnumerable<CurrentUserCollectionResponse>>> GetCurrentUserCollectionsAsync();
+        Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewCurrentUserCollectionsAsync();
         Task<BaseResponse<IEnumerable<CurrentUserPhotoDetailsResponse>>> GetPhotosOfCurrentUserCollectionAsync(int collectionId);
         Task<BaseResponse<object>> DeleteCollectionAsync(int id);
         Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewUserCollectionsAsync(int userId);
         Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewPhotosOfUserCollectionAsync(int userId, int collectionId);
+        Task<BaseResponse<ViewCollectionResponse>> ViewYourCollectionByIdAsync(int collectionId);
     }
 }

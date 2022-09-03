@@ -20,6 +20,8 @@ namespace DataAccessEF.TypeRepositories
             return await Context.LikedPhotos!
                 .Include(lp => lp.Photo)
                     .ThenInclude(p => p.User)
+                .Include(lp => lp.Photo)
+                    .ThenInclude(p => p.LikedPhotos)
                 .Where(lp => lp.UserId == userId)
                 .Select(lp => lp.Photo)
                 .Where(p => !p.DeletedDate.HasValue).ToListAsync();

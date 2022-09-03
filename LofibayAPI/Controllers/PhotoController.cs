@@ -64,7 +64,7 @@ namespace LofibayAPI.Controllers
         {
             try
             {
-                var response = await _photoService.GetPhotoDetailsByIdAsync(id);
+                var response = await _photoService.ViewPhotoDetailsByIdAsync(id);
                 if (response.Status == StatusTypes.NotFound)
                 {
                     return NotFound(response);
@@ -120,10 +120,10 @@ namespace LofibayAPI.Controllers
         }
 
         [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePhoto(int id)
+        [HttpDelete("{id}/soft")]
+        public async Task<IActionResult> SoftDeletePhoto(int id)
         {
-            var response = await _photoService.DeletePhotoAsync(id);
+            var response = await _photoService.SoftDeletePhotoAsync(id);
             switch (response.Status)
             {
                 case StatusTypes.NotFound:
@@ -135,6 +135,13 @@ namespace LofibayAPI.Controllers
                 default:
                     return UnprocessableEntity(response);
             }
+        }
+
+        [Authorize]
+        [HttpDelete("{id}/hard")]
+        public async Task<IActionResult> HardDeletePhoto(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

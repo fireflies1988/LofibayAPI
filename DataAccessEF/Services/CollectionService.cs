@@ -58,12 +58,20 @@ namespace DataAccessEF.Services
             };
         }
 
-        public async Task<BaseResponse<IEnumerable<CurrentUserCollectionResponse>>> GetCurrentUserCollectionsAsync()
+        public async Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewCurrentUserCollectionsAsync()
         {
-            return new SuccessResponse<IEnumerable<CurrentUserCollectionResponse>>
+            var collections = (await _unitOfWork.Collections.GetUserCollections(_userService.GetCurrentUserId())).ToList();
+            var viewUserCollectionsResponse = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(collections).ToList();
+            for (int i = 0; i < collections.Count(); i++)
             {
-                Data = _mapper.Map<IEnumerable<Collection>, IEnumerable<CurrentUserCollectionResponse>>(
-                    await _unitOfWork.Collections.GetAsync(c => c.UserId == _userService.GetCurrentUserId()))
+                viewUserCollectionsResponse[i].Thumbnails = _mapper.Map<IList<BasicPhotoInfoResponse?>>(
+                    collections[i].PhotoCollections?.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue).ToList());
+                viewUserCollectionsResponse[i].NumOfPhotos = collections[i].PhotoCollections?.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue).Count() ?? 0;
+            }
+
+            return new SuccessResponse<IEnumerable<ViewUserCollectionsResponse>>
+            {
+                Data = viewUserCollectionsResponse
             };
         }
 
@@ -156,10 +164,11 @@ namespace DataAccessEF.Services
 
         public async Task<BaseResponse<ViewCollectionResponse>> ViewCollectionByIdAsync(int id)
         {
-            Collection? existingCollection = await _unitOfWork.Collections.GetFirstOrDefaultAsync(c => c.CollectionId == id && c.IsPrivate == false, "User");
+            // client side: remember to handle isPrivate
+            Collection? existingCollection = await _unitOfWork.Collections.GetFirstOrDefaultAsync(c => c.CollectionId == id, "User");
             if (existingCollection == null)
             {
-                return new NotFoundResponse<ViewCollectionResponse> { Message = "Collection not found or collection is private." };
+                return new NotFoundResponse<ViewCollectionResponse> { Message = "Collection not found." };
             }
             existingCollection.Views++;
             await _unitOfWork.SaveChangesAsync();
@@ -170,17 +179,36 @@ namespace DataAccessEF.Services
             };
         }
 
-        public async Task<BaseResponse<IEnumerable<PhotoDetailsResponse>>> ViewPhotosOfCollectionAsync(int collectionId)
+        public async Task<BaseResponse<ViewCollectionResponse>> ViewYourCollectionByIdAsync(int collectionId)
         {
-            Collection? existingCollection = await _unitOfWork.Collections.GetCollectionIncludingPhotosByIdAsync(collectionId);
+            Collection? existingCollection = 
+                await _unitOfWork.Collections.GetFirstOrDefaultAsync(c => c.CollectionId == collectionId && c.UserId == _userService.GetCurrentUserId(), "User");
             if (existingCollection == null)
             {
-                return new NotFoundResponse<IEnumerable<PhotoDetailsResponse>> { Message = "Collection not found." };
+                return new NotFoundResponse<ViewCollectionResponse> { Message = "Collection not found." };
             }
 
-            return new SuccessResponse<IEnumerable<PhotoDetailsResponse>>
+            existingCollection.Views++;
+            await _unitOfWork.SaveChangesAsync();
+
+            return new SuccessResponse<ViewCollectionResponse>
             {
-                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<PhotoDetailsResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue))
+                Data = _mapper.Map<Collection, ViewCollectionResponse>(existingCollection)
+            };
+        }
+
+        public async Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewPhotosOfCollectionAsync(int collectionId)
+        {
+            // client side: remember to handle isPrivate
+            Collection? existingCollection = await _unitOfWork.Collections.GetPhotosOfCollection(collectionId);
+            if (existingCollection == null)
+            {
+                return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "Collection not found." };
+            }
+
+            return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
+            {
+                Data = _mapper.Map<IEnumerable<Photo?>, IEnumerable<BasicPhotoInfoResponse>>(existingCollection.PhotoCollections!.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue))
             };
         }
 
@@ -213,13 +241,22 @@ namespace DataAccessEF.Services
                 return new NotFoundResponse<IEnumerable<ViewUserCollectionsResponse>> { Message = "User doesn't exist." };
             }
 
+            var collections = (await _unitOfWork.Collections.GetUserCollections(userId)).Where(c => c.IsPrivate == false).ToList();
+            var viewUserCollectionsResponse = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(collections).ToList();
+            for (int i = 0; i < collections.Count(); i++)
+            {
+                viewUserCollectionsResponse[i].Thumbnails = _mapper.Map<IList<BasicPhotoInfoResponse?>>(
+                    collections[i].PhotoCollections?.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue).ToList());
+                viewUserCollectionsResponse[i].NumOfPhotos = collections[i].PhotoCollections?.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue).Count() ?? 0;
+            }
+
             return new SuccessResponse<IEnumerable<ViewUserCollectionsResponse>>
             {
-                Data = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(
-                    await _unitOfWork.Collections.GetAsync(c => c.UserId == userId && !c.IsPrivate, includeProperties: "User"))
+                Data = viewUserCollectionsResponse
             };
         }
 
+        // not used
         public async Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewPhotosOfUserCollectionAsync(int userId, int collectionId)
         {
             User? existingUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == userId && !u.DeletedDate.HasValue);

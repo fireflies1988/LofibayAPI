@@ -40,5 +40,7 @@ namespace Domain.Models.DTOs.Responses.Photos
         public IList<PhotoTag>? PhotoTags { get; set; }
 
         public IList<PhotoColor>? PhotoColors { get; set; }
+
+        public IList<LikedPhoto>? LikedPhotos { get; set; }
     }
 }

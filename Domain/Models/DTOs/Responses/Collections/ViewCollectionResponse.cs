@@ -19,6 +19,6 @@ namespace Domain.Models.DTOs.Responses.Collections
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
-        public UserInfoResponse? User { get; set; }
+        public BasicUserInfoResponse? User { get; set; }
     }
 }

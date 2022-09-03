@@ -20,6 +20,7 @@ namespace Domain.Entities
         public DateTime ResetTokenExpDate { get; set; }
         public bool Verified { get; set; } = false;
         public string? AvatarUrl { get; set; }
+        public string? AvatarUrlPublicId { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public DateTime? DateOfBirth { get; set; }
@@ -41,6 +42,8 @@ namespace Domain.Entities
         public ICollection<Photo>? Photos { get; set; }
 
         public IList<LikedPhoto>? LikedPhotos { get; set; }
+
+        public ICollection<Collection>? Collections { get; set; }
 
         public IList<UserFollower>? Followers { get; set; }
         public IList<UserFollower>? Following { get; set; }

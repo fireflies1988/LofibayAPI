@@ -9,7 +9,7 @@ namespace Domain.Interfaces.Services
     public interface IPhotoService
     {
         Task<BaseResponse<object>> UploadPhotoAsync(UploadPhotoRequest uploadPhotoRequest);
-        Task<BaseResponse<PhotoDetailsResponse>> GetPhotoDetailsByIdAsync(int id);
+        Task<BaseResponse<PhotoDetailsResponse>> ViewPhotoDetailsByIdAsync(int id);
         Task<BaseResponse<UpdatePhotoResponse>> UpdatePhotoAsync(int id, UpdatePhotoRequest updatePhotoRequest);
         Task InsertTagsAsync(Photo photo, IList<string> tags);
         Task<BaseResponse<IEnumerable<ViewYourUploadedPhotosResponse>>> ViewYourUploadedPhotosAysnc();
@@ -17,6 +17,6 @@ namespace Domain.Interfaces.Services
         Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewUserUploadedPhotosAsync(int id);
         Task<BaseResponse<IEnumerable<BasicPhotoInfoResponse>>> ViewLikedPhotosOfUserAsync(int id);
         Task<BaseResponse<object>> LikeOrUnlikePhotoAsync(int id);
-        Task<BaseResponse<object>> DeletePhotoAsync(int id);
+        Task<BaseResponse<object>> SoftDeletePhotoAsync(int id);
     }
 }

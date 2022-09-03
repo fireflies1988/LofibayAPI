@@ -30,7 +30,7 @@ namespace DataAccessEF.Services
             _mapper = mapper;
         }
 
-        public async Task<BaseResponse<object>> DeletePhotoAsync(int id)
+        public async Task<BaseResponse<object>> SoftDeletePhotoAsync(int id)
         {
             Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue);
             if (existingPhoto == null)
@@ -52,7 +52,7 @@ namespace DataAccessEF.Services
             return new FailResponse { Message = "Unable to delete your photo." };
         }
 
-        public async Task<BaseResponse<PhotoDetailsResponse>> GetPhotoDetailsByIdAsync(int id)
+        public async Task<BaseResponse<PhotoDetailsResponse>> ViewPhotoDetailsByIdAsync(int id)
         {
             Photo? photo = await _unitOfWork.Photos.GetPhotoDetailsByIdAsync(id);
             if (photo == null)

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Domain.Enums;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities
 {
@@ -30,7 +31,7 @@ namespace Domain.Entities
         public string? Phash { get; set; }
         public bool SemiTransparent { get; set; } = false;
         public bool Grayscale { get; set; } = false;
-        public bool IsFeatured { get; set; } = false;
+        public bool IsReported { get; set; } = false;
         public bool HasSensitiveContent { get; set; } = false;
         public long Views { get; set; }
         public long Downloads { get; set; }
@@ -40,6 +41,9 @@ namespace Domain.Entities
 
         public int UserId { get; set; }
         public User? User { get; set; }
+
+        public int PhotoStateId { get; set; } = PhotoStates.NotReviewed;
+        public PhotoState? PhotoState { get; set; }
 
         public IList<LikedPhoto>? LikedPhotos { get; set; }
 

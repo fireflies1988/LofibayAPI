@@ -7,6 +7,7 @@ using Domain.Models.DTOs.Requests.Collections;
 using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.DTOs.Responses.Collections;
 using Domain.Models.DTOs.Responses.Photos;
+using Domain.Models.DTOs.Responses.Admin;
 
 namespace LofibayAPI.Mappings
 {
@@ -32,6 +33,7 @@ namespace LofibayAPI.Mappings
             CreateMap<Photo?, ViewYourLikedPhotosResponse>();
             CreateMap<Photo, ViewYourUploadedPhotosResponse>();
             CreateMap<Photo?, BasicPhotoInfoResponse>();
+            CreateMap<Photo, PhotoInfoResponse>();
 
             CreateMap<CreateCollectionRequest, Collection>();
             CreateMap<Collection, CreateCollectionResponse>();

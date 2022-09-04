@@ -61,6 +61,8 @@ namespace DataAccessEF
 
                 b.Property(p => p.Format).IsRequired();
 
+                b.Property(p => p.PhotoStateId).HasDefaultValue(Domain.Enums.PhotoStates.NotReviewed);
+
                 b.HasOne(p => p.User)
                     .WithMany(u => u.Photos)
                     .OnDelete(DeleteBehavior.NoAction);
@@ -97,6 +99,16 @@ namespace DataAccessEF
                     new Role { RoleId = Domain.Enums.Roles.Admin, RoleName = "Admin" },
                     new Role { RoleId = Domain.Enums.Roles.User, RoleName = "User" }
                 );
+            });
+
+            modelBuilder.Entity<PhotoState>(b =>
+            {
+                b.Property(ps => ps.State).IsRequired().HasMaxLength(50);
+
+                b.HasData(
+                    new PhotoState { PhotoStateId = Domain.Enums.PhotoStates.NotReviewed, State = "NotReviewed" },
+                    new PhotoState { PhotoStateId = Domain.Enums.PhotoStates.Featured, State = "Featured" },
+                    new PhotoState { PhotoStateId = Domain.Enums.PhotoStates.Rejected, State = "Rejected" });
             });
 
             modelBuilder.Entity<LikedPhoto>(b =>
@@ -177,6 +189,7 @@ namespace DataAccessEF
         public DbSet<Tag>? Tags { get; set; }
         public DbSet<Collection>? Collections { get; set; }
         public DbSet<Color>? Colors { get; set; }
+        public DbSet<PhotoState>? PhotoStates { get; set; }
         public DbSet<ColorAnalyzer>? ColorAnalyzers { get; set; }
         public DbSet<LikedPhoto>? LikedPhotos { get; set; }
         public DbSet<PhotoTag>? PhotoTags { get; set; }

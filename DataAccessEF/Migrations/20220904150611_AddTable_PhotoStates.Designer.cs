@@ -4,6 +4,7 @@ using DataAccessEF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessEF.Migrations
 {
     [DbContext(typeof(LofibayDbContext))]
-    partial class LofibayDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220904150611_AddTable_PhotoStates")]
+    partial class AddTable_PhotoStates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,7 +158,7 @@ namespace DataAccessEF.Migrations
                     b.Property<int>("Height")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsReported")
+                    b.Property<bool>("IsFeatured")
                         .HasColumnType("bit");
 
                     b.Property<string>("Location")
@@ -282,6 +284,11 @@ namespace DataAccessEF.Migrations
                         {
                             PhotoStateId = 3,
                             State = "Rejected"
+                        },
+                        new
+                        {
+                            PhotoStateId = 4,
+                            State = "Reported"
                         });
                 });
 

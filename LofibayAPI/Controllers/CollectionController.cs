@@ -1,6 +1,12 @@
-﻿using Domain.Enums;
+﻿using AutoMapper;
+using Domain.Entities;
+using Domain.Enums;
+using Domain.Interfaces;
 using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests.Collections;
+using Domain.Models.DTOs.Responses.Collections;
+using Domain.Models.DTOs.Responses.Photos;
+using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -12,10 +18,14 @@ namespace LofibayAPI.Controllers
     public class CollectionController : ControllerBase
     {
         private readonly ICollectionService _collectionService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CollectionController(ICollectionService collectionService)
+        public CollectionController(ICollectionService collectionService, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _collectionService = collectionService;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         [Authorize]
@@ -110,9 +120,45 @@ namespace LofibayAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCollections()
+        public async Task<IActionResult> GetAllCollections(string? keywords = null)
         {
-            throw new NotImplementedException();
+            var collections = (await _unitOfWork.Collections.GetAllCollectionsAsync()).ToList();
+            var viewUserCollectionsResponses = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(collections).ToList();
+            for (int i = 0; i < collections.Count(); i++)
+            {
+                viewUserCollectionsResponses[i].Thumbnails = _mapper.Map<IList<BasicPhotoInfoResponse?>>(
+                    collections[i].PhotoCollections?.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue).Take(3).ToList());
+                viewUserCollectionsResponses[i].NumOfPhotos = collections[i].PhotoCollections?.Select(pc => pc.Photo).Where(p => !p.DeletedDate.HasValue).Count() ?? 0;
+            }
+
+            if (keywords != null)
+            {
+                IList<ViewUserCollectionsResponse> filteredCollections = new List<ViewUserCollectionsResponse>();
+                string[] keywordArr = keywords.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var c in viewUserCollectionsResponses)
+                {
+                    foreach(string keyword in keywordArr)
+                    {
+                        if (c.CollectionName?.ToLower().Contains(keyword) == true)
+                        {
+                            filteredCollections.Add(c);
+                            break;
+                        }
+
+                        if (c.Description?.ToLower().Contains(keyword) == true)
+                        {
+                            filteredCollections.Add(c);
+                            break;
+                        }
+                    }
+                }
+
+                return Ok(new SuccessResponse { Data = filteredCollections });
+            }
+            else
+            {
+                return Ok(new SuccessResponse { Data = viewUserCollectionsResponses });
+            }   
         }
     }
 }

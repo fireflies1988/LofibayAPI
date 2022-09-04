@@ -58,9 +58,9 @@ namespace DataAccessEF.Services
             };
         }
 
-        public async Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewCurrentUserCollectionsAsync()
+        public async Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewCurrentUserThumbnailCollectionsAsync()
         {
-            var collections = (await _unitOfWork.Collections.GetUserCollections(_userService.GetCurrentUserId())).ToList();
+            var collections = (await _unitOfWork.Collections.GetUserCollectionsAsync(_userService.GetCurrentUserId())).ToList();
             var viewUserCollectionsResponse = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(collections).ToList();
             for (int i = 0; i < collections.Count(); i++)
             {
@@ -234,14 +234,14 @@ namespace DataAccessEF.Services
             return new FailResponse { Message = "Something went wrong, unable to delete your collection." };
         }
 
-        public async Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewUserCollectionsAsync(int userId)
+        public async Task<BaseResponse<IEnumerable<ViewUserCollectionsResponse>>> ViewUserThumbnailCollectionsAsync(int userId)
         {
             if ((await _unitOfWork.Users.GetFirstOrDefaultAsync(u => u.UserId == userId && !u.DeletedDate.HasValue)) == null)
             {
                 return new NotFoundResponse<IEnumerable<ViewUserCollectionsResponse>> { Message = "User doesn't exist." };
             }
 
-            var collections = (await _unitOfWork.Collections.GetUserCollections(userId)).Where(c => c.IsPrivate == false).ToList();
+            var collections = (await _unitOfWork.Collections.GetUserCollectionsAsync(userId)).Where(c => c.IsPrivate == false).ToList();
             var viewUserCollectionsResponse = _mapper.Map<IEnumerable<Collection>, IEnumerable<ViewUserCollectionsResponse>>(collections).ToList();
             for (int i = 0; i < collections.Count(); i++)
             {

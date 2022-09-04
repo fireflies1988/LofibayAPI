@@ -196,7 +196,7 @@ namespace LofibayAPI.Controllers
         [HttpGet("current/collections")]
         public async Task<IActionResult> ViewYourCollections()
         {
-            return Ok(await _collectionService.ViewCurrentUserCollectionsAsync());
+            return Ok(await _collectionService.ViewCurrentUserThumbnailCollectionsAsync());
         }
 
         [Authorize]
@@ -244,7 +244,7 @@ namespace LofibayAPI.Controllers
         [HttpGet("{id}/collections")]
         public async Task<IActionResult> ViewUserCollections(int id)
         {
-            var response = await _collectionService.ViewUserCollectionsAsync(id);
+            var response = await _collectionService.ViewUserThumbnailCollectionsAsync(id);
             if (response.Status == StatusTypes.NotFound)
             {
                 return UnprocessableEntity(response);

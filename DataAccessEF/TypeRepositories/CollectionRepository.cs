@@ -37,7 +37,7 @@ namespace DataAccessEF.TypeRepositories
                 .FirstOrDefaultAsync(c => c.UserId == userId && c.CollectionId == collectionId && c.IsPrivate == false);
         }
 
-        public async Task<IEnumerable<Collection>> GetUserCollections(int userId)
+        public async Task<IEnumerable<Collection>> GetUserCollectionsAsync(int userId)
         {
             var collections = await Context.Collections!
                 .Include(c => c.PhotoCollections)!
@@ -46,6 +46,16 @@ namespace DataAccessEF.TypeRepositories
                 .Where(c => c.UserId == userId).ToListAsync();
             Random random = new Random();
             collections.ForEach(c => c.PhotoCollections?.OrderBy(pc => random.Next())?.Take(3));
+            return collections;
+        }
+
+        public async Task<IEnumerable<Collection>> GetAllCollectionsAsync()
+        {
+            var collections = await Context.Collections!
+                .Include(c => c.PhotoCollections)!
+                    .ThenInclude(pc => pc.Photo)
+                .Include(c => c.User)
+                .Where(c => c.IsPrivate == false).ToListAsync();
             return collections;
         }
     }

@@ -28,7 +28,7 @@ namespace LofibayAPI.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UploadPhoto([FromForm]UploadPhotoRequest uploadPhotoRequest)
+        public async Task<IActionResult> UploadPhoto([FromForm] UploadPhotoRequest uploadPhotoRequest)
         {
             if (!uploadPhotoRequest.ImageFile!.ContentType.Contains("image"))
             {
@@ -51,12 +51,60 @@ namespace LofibayAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPhotos()
+        public async Task<IActionResult> GetAllPhotos(string? keywords = null)
         {
-            return Ok(new SuccessResponse
+            if (keywords != null)
             {
-                Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(await _unitOfWork.Photos.GetAsync(p => !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos,PhotoCollections"))
-            });
+                IList<Photo> photos = (await _unitOfWork.Photos.GetAsync(
+                    filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured,
+                    includeProperties: "User,LikedPhotos,PhotoCollections,PhotoTags")).ToList();
+
+                IList<BasicPhotoInfoResponse> filteredPhotos = new List<BasicPhotoInfoResponse>();
+                string[] keywordArr = keywords.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var photo in photos)
+                {
+                    foreach (string keyword in keywordArr)
+                    {
+                        bool matchedWithTag = false;
+
+                        if (photo.Description?.ToLower().Contains(keyword) == true)
+                        {
+                            filteredPhotos.Add(_mapper.Map<Photo, BasicPhotoInfoResponse>(photo));
+                            break;
+                        }
+
+                        foreach (var tag in photo.PhotoTags!)
+                        {
+                            if (tag.TagName?.ToLower().Contains(keyword) == true)
+                            {
+                                matchedWithTag = true;
+                                filteredPhotos.Add(_mapper.Map<Photo, BasicPhotoInfoResponse>(photo));
+                                break;
+                            }
+                        }
+
+                        if (matchedWithTag == true)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                return Ok(new SuccessResponse
+                {
+                    Data = filteredPhotos
+                });
+            }
+            else
+            {
+                return Ok(new SuccessResponse
+                {
+                    Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(
+                        await _unitOfWork.Photos.GetAsync(
+                            filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured,
+                            includeProperties: "User,LikedPhotos,PhotoCollections"))
+                });
+            }
         }
 
         [HttpGet("{id}")]

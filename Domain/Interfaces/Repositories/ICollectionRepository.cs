@@ -6,6 +6,7 @@ namespace Domain.Interfaces.Repositories
     {
         Task<Collection?> GetPhotosOfCollection(int collectionId);
         Task<Collection?> GetCollectionIncludingPhotosByIdAsync(int collectionId, int userId);
-        Task<IEnumerable<Collection>> GetUserCollections(int userId);
+        Task<IEnumerable<Collection>> GetUserCollectionsAsync(int userId);
+        Task<IEnumerable<Collection>> GetAllCollectionsAsync();
     }
 }

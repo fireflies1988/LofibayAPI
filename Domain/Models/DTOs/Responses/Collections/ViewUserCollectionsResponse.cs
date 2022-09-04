@@ -18,5 +18,7 @@ namespace Domain.Models.DTOs.Responses.Collections
         public IList<BasicPhotoInfoResponse?>? Thumbnails { get; set; }
 
         public BasicUserInfoResponse? User { get; set; }
+
+        public IList<PhotoCollectionResponse>? PhotoCollections { get; set; }
     }
 }

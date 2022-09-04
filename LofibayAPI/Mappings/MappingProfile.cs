@@ -40,6 +40,7 @@ namespace LofibayAPI.Mappings
             CreateMap<Collection, ViewCollectionResponse>();
             CreateMap<Collection, CurrentUserCollectionResponse>();
             CreateMap<Collection, ViewUserCollectionsResponse>();
+            CreateMap<PhotoCollection, PhotoCollectionResponse>();
         }
     }
 }

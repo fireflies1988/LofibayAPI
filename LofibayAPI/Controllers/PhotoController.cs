@@ -55,7 +55,7 @@ namespace LofibayAPI.Controllers
         {
             return Ok(new SuccessResponse
             {
-                Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(await _unitOfWork.Photos.GetAsync(p => !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos"))
+                Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(await _unitOfWork.Photos.GetAsync(p => !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos,PhotoCollections"))
             });
         }
 
@@ -99,6 +99,24 @@ namespace LofibayAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse { Message = ex.Message });
             }
+        }
+
+        [HttpPatch("{id}/download")]
+        public async Task<IActionResult> IncreaseDownloadsByOne(int id)
+        {
+            Photo? existingPhoto = await _unitOfWork.Photos.GetFirstOrDefaultAsync(p => p.PhotoId == id && !p.DeletedDate.HasValue);
+            if (existingPhoto == null)
+            {
+                return NotFound(new NotFoundResponse { Message = "Photo not found." });
+            }
+
+            existingPhoto.Downloads++;
+            if ((await _unitOfWork.SaveChangesAsync()) > 0)
+            {
+                return Ok(new SuccessResponse { Message = "Downloads + 1" });
+            }
+
+            return UnprocessableEntity(new FailResponse { Message = "Something went wrong." });
         }
 
         [Authorize]

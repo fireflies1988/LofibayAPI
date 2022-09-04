@@ -66,6 +66,10 @@ namespace LofibayAPI.Controllers
             if (response.Status == StatusTypes.Fail)
             {
                 return UnprocessableEntity(response);
+            } 
+            else if (response.Status == StatusTypes.Error)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
 
             return Ok(response);
@@ -167,6 +171,10 @@ namespace LofibayAPI.Controllers
             if (response.Status == StatusTypes.Fail)
             {
                 return UnprocessableEntity(response);
+            }
+            else if (response.Status == StatusTypes.Error)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
 
             return Ok(response);

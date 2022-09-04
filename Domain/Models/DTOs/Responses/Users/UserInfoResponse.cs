@@ -15,6 +15,7 @@ namespace Domain.Models.DTOs.Responses.Users
         public string? AvatarUrl { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
+        public bool Verified { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Biography { get; set; }

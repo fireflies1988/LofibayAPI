@@ -344,7 +344,7 @@ namespace DataAccessEF.Services
                 return new NotFoundResponse<IEnumerable<BasicPhotoInfoResponse>> { Message = "User doesn't exist." };
             }
 
-            var userUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == id && !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos");
+            var userUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == id && !p.DeletedDate.HasValue, includeProperties: "User,LikedPhotos,PhotoCollections");
             return new SuccessResponse<IEnumerable<BasicPhotoInfoResponse>>
             {
                 Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(userUploadedPhotos)
@@ -362,7 +362,7 @@ namespace DataAccessEF.Services
 
         public async Task<BaseResponse<IEnumerable<ViewYourUploadedPhotosResponse>>> ViewYourUploadedPhotosAysnc()
         {
-            var yourUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == _userService.GetCurrentUserId() && !p.DeletedDate.HasValue, includeProperties: "User");
+            var yourUploadedPhotos = await _unitOfWork.Photos.GetAsync(p => p.UserId == _userService.GetCurrentUserId() && !p.DeletedDate.HasValue, includeProperties: "User,PhotoCollections,LikedPhotos");
             return new SuccessResponse<IEnumerable<ViewYourUploadedPhotosResponse>> {
                 Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<ViewYourUploadedPhotosResponse>>(yourUploadedPhotos)
             };

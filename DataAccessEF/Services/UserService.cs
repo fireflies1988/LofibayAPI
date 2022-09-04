@@ -169,7 +169,7 @@ namespace DataAccessEF.Services
                 });
                 return new SuccessResponse<SignupResponse>
                 {
-                    Message = "Your account has been successfully created. Please check your email for your account verification code and enter it below to confirm your email address.",
+                    Message = "Please check your email to get your verification code, then go to Account settings to verify it.",
                     Data = new SignupResponse
                     {
                         Email = user.Email

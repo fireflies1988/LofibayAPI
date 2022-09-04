@@ -13,6 +13,7 @@ namespace DataAccessEF.TypeRepositories
         public async Task<User?> GetUserProfileDetails(int id)
         {
             return await Context.Users!
+                .Include(u => u.Role)
                 .Include(u => u.Address)
                 .Include(u => u.Gender)
                 .Include(u => u.Photos)

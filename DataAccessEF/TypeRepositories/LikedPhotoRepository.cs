@@ -22,6 +22,8 @@ namespace DataAccessEF.TypeRepositories
                     .ThenInclude(p => p.User)
                 .Include(lp => lp.Photo)
                     .ThenInclude(p => p.LikedPhotos)
+                .Include(lp => lp.Photo)
+                    .ThenInclude(p => p.PhotoCollections)
                 .Where(lp => lp.UserId == userId)
                 .Select(lp => lp.Photo)
                 .Where(p => !p.DeletedDate.HasValue).ToListAsync();

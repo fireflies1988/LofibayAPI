@@ -49,5 +49,7 @@ namespace Domain.Entities
         public IList<UserFollower>? Following { get; set; }
 
         public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }
+
+        public ICollection<Notification>? Notifications { get; set; }
     }
 }

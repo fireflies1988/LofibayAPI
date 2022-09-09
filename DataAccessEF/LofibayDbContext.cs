@@ -190,6 +190,7 @@ namespace DataAccessEF
         public DbSet<Collection>? Collections { get; set; }
         public DbSet<Color>? Colors { get; set; }
         public DbSet<PhotoState>? PhotoStates { get; set; }
+        public DbSet<Notification>? Notifications { get; set; }
         public DbSet<ColorAnalyzer>? ColorAnalyzers { get; set; }
         public DbSet<LikedPhoto>? LikedPhotos { get; set; }
         public DbSet<PhotoTag>? PhotoTags { get; set; }

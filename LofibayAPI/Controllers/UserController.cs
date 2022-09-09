@@ -241,6 +241,34 @@ namespace LofibayAPI.Controllers
             return Ok(response);
         }
 
+        [Authorize]
+        [HttpGet("current/notifications")]
+        public async Task<IActionResult> ViewYourNotifications()
+        {
+            var notifications = await _unitOfWork.Notifications.GetAsync(
+                n => n.UserId == _userService.GetCurrentUserId() && n.NotificationTime > DateTime.Now.AddDays(-60),
+                n => n.OrderByDescending(n => n.NotificationTime));
+            return Ok(new SuccessResponse { Data = notifications });
+        }
+
+        [Authorize]
+        [HttpPatch("current/notifications/mark-as-read")] 
+        public async Task<IActionResult> MarkNotificationsAsRead()
+        {
+            var notifications = await _unitOfWork.Notifications.GetAsync(
+                n => n.UserId == _userService.GetCurrentUserId() && n.NotificationTime > DateTime.Now.AddDays(-60),
+                n => n.OrderByDescending(n => n.NotificationTime));
+
+            foreach (var notification in notifications)
+            {
+                notification.Read = true;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            
+            return Ok(new SuccessResponse { Message = "Notifications marked as read." });
+        }
+
         [HttpGet("{id}/collections")]
         public async Task<IActionResult> ViewUserCollections(int id)
         {

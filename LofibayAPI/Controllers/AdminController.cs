@@ -106,15 +106,21 @@ namespace LofibayAPI.Controllers
                 case 1:
                     message = "This photo has been set state 'NotReviewed'.";
                     break;
-                case 2: // feature
+                case 2:
                     message = "This photo has been featured.";
+                    await _unitOfWork.Notifications.AddAsync(new Notification
+                    {
+                        ImageUrl = existingPhoto.PhotoUrl,
+                        Message =  "Congratulations! Your photo has been featured.",
+                        UserId = existingPhoto.UserId,
+                    });
                     break;
-                case 3: // unfeature and reject
+                case 3:
                     message = "This photo has been rejected.";
                     break;
                 default:
                     return BadRequest(new FailResponse { Message = "Invalid photoStateId value." });
-            } 
+            }
             existingPhoto.PhotoStateId = photoStateId;
             if ((await _unitOfWork.SaveChangesAsync()) > 0)
             {

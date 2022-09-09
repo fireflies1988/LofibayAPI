@@ -12,6 +12,7 @@ namespace Domain.Interfaces
         IColorRepository Colors { get; }
         ICollectionRepository Collections { get; }
         ILikedPhotoRepository LikedPhotos { get; }
+        INotificationRepository Notifications { get; }
         DatabaseFacade Database { get; }
 
         Task<int> SaveChangesAsync();

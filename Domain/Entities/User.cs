@@ -27,6 +27,11 @@ namespace Domain.Entities
         [Phone]
         public string? PhoneNumber { get; set; }
         public string? Biography { get; set; }
+        public string? MomoQRCode { get; set; }
+        public string? MomoPublicId { get; set; }
+        public string? BankQRCode { get; set; }
+        public string? BankPublicId { get; set; }
+        public string? PaypalDonationLink { get; set; }
         public DateTime JoinDate { get; set; } = DateTime.Now;
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
         public DateTime? DeletedDate { get; set; }

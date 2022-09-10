@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
+using Domain.Models.DTOs.Requests.Payments;
 using Domain.Models.DTOs.Requests.Users;
 using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
@@ -267,6 +268,15 @@ namespace LofibayAPI.Controllers
             await _unitOfWork.SaveChangesAsync();
             
             return Ok(new SuccessResponse { Message = "Notifications marked as read." });
+        }
+
+        [Authorize]
+        [HttpPatch("current/payments")]
+        public async Task<IActionResult> UpdatePaymentInfo([FromForm]UpdatePaymentInfoRequest updatePaymentInfoRequest)
+        {
+            var response = await _userService.UpdateYourPaymentInfoAsync(updatePaymentInfoRequest);
+
+            return Ok(response);
         }
 
         [HttpGet("{id}/collections")]

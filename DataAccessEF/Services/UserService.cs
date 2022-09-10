@@ -7,6 +7,7 @@ using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests.Emails;
+using Domain.Models.DTOs.Requests.Payments;
 using Domain.Models.DTOs.Requests.Users;
 using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
@@ -249,6 +250,55 @@ namespace DataAccessEF.Services
             return new FailResponse<UserInfoResponse>
             {
                 Message = "Failed to update your profile."
+            };
+        }
+
+        public async Task<BaseResponse<object>> UpdateYourPaymentInfoAsync(UpdatePaymentInfoRequest updatePaymentInfoRequest)
+        {
+            User? currentUser = await _unitOfWork.Users.GetByIdAsync(GetCurrentUserId());
+            currentUser!.PaypalDonationLink = updatePaymentInfoRequest.PaypalDonationLink;
+            if (updatePaymentInfoRequest.BankQRCodeImageFile != null)
+            {
+                ImageUploadParams uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(GetCurrentUserId().ToString(), updatePaymentInfoRequest.BankQRCodeImageFile!.OpenReadStream()),
+                    Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{GetCurrentUserId()}"
+                };
+                ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                if (uploadResult.StatusCode == HttpStatusCode.OK)
+                {
+                    if (currentUser.BankPublicId != null)
+                    {
+                        await _cloudinary.DestroyAsync(new DeletionParams(currentUser.BankPublicId));
+                    }
+                    currentUser.BankQRCode = uploadResult.SecureUrl.ToString();
+                    currentUser.BankPublicId = uploadResult.PublicId;
+                }
+            }
+
+            if (updatePaymentInfoRequest.MomoQRCodeImageFile != null)
+            {
+                ImageUploadParams uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(GetCurrentUserId().ToString(), updatePaymentInfoRequest.MomoQRCodeImageFile!.OpenReadStream()),
+                    Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{GetCurrentUserId()}"
+                };
+                ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                if (uploadResult.StatusCode == HttpStatusCode.OK)
+                {
+                    if (currentUser.MomoPublicId != null)
+                    {
+                        await _cloudinary.DestroyAsync(new DeletionParams(currentUser.MomoPublicId));
+                    }
+                    currentUser.MomoQRCode = uploadResult.SecureUrl.ToString();
+                    currentUser.MomoPublicId = uploadResult.PublicId;
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new SuccessResponse<object>
+            {
+                Message = "Your payments has been updated successfully.",
             };
         }
 

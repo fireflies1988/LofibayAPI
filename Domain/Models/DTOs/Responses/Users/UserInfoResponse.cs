@@ -19,6 +19,9 @@ namespace Domain.Models.DTOs.Responses.Users
         public DateTime? DateOfBirth { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Biography { get; set; }
+        public string? MomoQRCode { get; set; }
+        public string? BankQRCode { get; set; }
+        public string? PaypalDonationLink { get; set; }
         public DateTime JoinDate { get; set; }
         public DateTime ModifiedDate { get; set; }
         public int NumOfUploadedPhotos { get; set; }

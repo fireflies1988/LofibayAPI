@@ -1,4 +1,5 @@
-﻿using Domain.Models.DTOs.Requests.Users;
+﻿using Domain.Models.DTOs.Requests.Payments;
+using Domain.Models.DTOs.Requests.Users;
 using Domain.Models.DTOs.Responses.Users;
 using Domain.Models.ResponseTypes;
 using System;
@@ -25,5 +26,6 @@ namespace Domain.Interfaces.Services
         Task<BaseResponse<object>> ResetPasswordAsync(string email, string password, string resetToken);
         Task<BaseResponse<UserInfoResponse>> ViewUserProfileDetails(int id);
         Task<BaseResponse<UserInfoResponse>> ViewCurrentUserProfileDetails();
+        Task<BaseResponse<object>> UpdateYourPaymentInfoAsync(UpdatePaymentInfoRequest updatePaymentInfoRequest);
     }
 }

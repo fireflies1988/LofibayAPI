@@ -218,5 +218,33 @@ namespace LofibayAPI.Controllers
 
             return UnprocessableEntity(new FailResponse { Message = "Unable to delete this tag." });
         }
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            var photos = await _unitOfWork.Photos.GetAllAsync();
+            var users = await _unitOfWork.Users.GetAllAsync();
+            var collections = await _unitOfWork.Collections.GetAllAsync();
+
+            return Ok(new SuccessResponse
+            {
+                Data = new StatsResponse
+                {
+                    NumberOfPhotos = photos.Count(),
+                    NumberOfFeaturedPhotos = photos.Where(p => p.PhotoStateId == 2 && !p.DeletedDate.HasValue).Count(),
+                    NumberOfUnfeaturedPhotos = photos.Where(p => p.PhotoStateId == 1 && !p.DeletedDate.HasValue).Count(),
+                    NumberOfRejectedPhotos = photos.Where(p => p.PhotoStateId == 3 && !p.DeletedDate.HasValue).Count(),
+                    NumberOfDeletedPhotos = photos.Where(p => p.DeletedDate.HasValue).Count(),
+
+                    NumberOfCollections = collections.Count(),
+                    NumberOfPrivateCollections = collections.Where(c => c.IsPrivate == true).Count(),
+                    NumberOfPublicCollections = collections.Where(c => c.IsPrivate == false).Count(),
+
+                    NumberOfUsers = users.Count(),
+                    NumberOfUnverifiedUsers = users.Where(u => u.Verified == false).Count(),
+                    NumberOfVerifiedUsers = users.Where(u => u.Verified == true).Count()
+                }
+            });
+        }
     }
 }

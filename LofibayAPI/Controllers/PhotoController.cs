@@ -51,13 +51,60 @@ namespace LofibayAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPhotos(string? keywords = null)
+        public async Task<IActionResult> GetAllPhotos(string? keywords = null, string orientation = "any", string color = "any", string sortBy = "relevance")
         {
             if (keywords != null)
             {
-                IList<Photo> photos = (await _unitOfWork.Photos.GetAsync(
-                    filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured,
-                    includeProperties: "User,LikedPhotos,PhotoCollections,PhotoTags")).ToList();
+                IList<Photo> photos = new List<Photo>();
+                if (orientation == "portrait")
+                {
+                    photos = (await _unitOfWork.Photos.GetAsync(
+                        filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured && !p.User!.DeletedDate.HasValue
+                            && p.Width < p.Height,
+                        includeProperties: "User,LikedPhotos,PhotoCollections,PhotoTags,PhotoColors")).ToList();
+                }
+                else if (orientation == "landscape")
+                {
+                    photos = (await _unitOfWork.Photos.GetAsync(
+                        filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured && !p.User!.DeletedDate.HasValue
+                            && p.Width > p.Height,
+                        includeProperties: "User,LikedPhotos,PhotoCollections,PhotoTags,PhotoColors")).ToList();
+                }
+                else if (orientation == "square")
+                {
+                    photos = (await _unitOfWork.Photos.GetAsync(
+                        filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured && !p.User!.DeletedDate.HasValue
+                            && p.Width == p.Height,
+                        includeProperties: "User,LikedPhotos,PhotoCollections,PhotoTags,PhotoColors")).ToList();
+                }
+                else // any orientation
+                {
+                    photos = (await _unitOfWork.Photos.GetAsync(
+                        filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured && !p.User!.DeletedDate.HasValue,
+                        includeProperties: "User,LikedPhotos,PhotoCollections,PhotoTags,PhotoColors")).ToList();
+                }
+
+                if (color != "any")
+                {
+                    IList<Photo> photosAfterFilteringColor = new List<Photo>();
+                    foreach (var photo in photos)
+                    {
+                        foreach (var photoColor in photo.PhotoColors!.OrderByDescending(p => p.PredominantPercent))
+                        {
+                            if (photoColor.ColorName == color)
+                            {
+                                photosAfterFilteringColor.Add(photo);
+                                break;
+                            }
+                        }
+                    }
+                    photos = photosAfterFilteringColor;
+                }
+
+                if (sortBy == "newest")
+                {
+                    photos = photos.OrderByDescending(p => p.UploadedAt).ToList();
+                }
 
                 IList<BasicPhotoInfoResponse> filteredPhotos = new List<BasicPhotoInfoResponse>();
                 string[] keywordArr = keywords.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
@@ -97,12 +144,13 @@ namespace LofibayAPI.Controllers
             }
             else
             {
+                Random random = new Random();
                 return Ok(new SuccessResponse
                 {
                     Data = _mapper.Map<IEnumerable<Photo>, IEnumerable<BasicPhotoInfoResponse>>(
-                        await _unitOfWork.Photos.GetAsync(
-                            filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured,
-                            includeProperties: "User,LikedPhotos,PhotoCollections"))
+                        (await _unitOfWork.Photos.GetAsync(
+                            filter: p => !p.DeletedDate.HasValue && p.PhotoStateId == PhotoStates.Featured && !p.User!.DeletedDate.HasValue,
+                            includeProperties: "User,LikedPhotos,PhotoCollections")).OrderBy(p => random.Next()))
                 });
             }
         }

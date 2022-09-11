@@ -55,7 +55,7 @@ namespace DataAccessEF.TypeRepositories
                 .Include(c => c.PhotoCollections)!
                     .ThenInclude(pc => pc.Photo)
                 .Include(c => c.User)
-                .Where(c => c.IsPrivate == false).ToListAsync();
+                .Where(c => c.IsPrivate == false && !c.User!.DeletedDate.HasValue).ToListAsync();
             return collections;
         }
     }

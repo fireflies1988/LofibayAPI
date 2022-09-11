@@ -9,7 +9,7 @@ namespace Domain.Models.DTOs.Responses.Photos
         public int PhotoId { get; set; }
         public string? PhotoUrl { get; set; }
         public string? DownloadUrl { get; set; }
-        public bool IsFeatured { get; set; }
+        public int PhotoStateId { get; set; }
         public bool HasSensitiveContent { get; set; }
         public DateTime? DeletedDate { get; set; }
 

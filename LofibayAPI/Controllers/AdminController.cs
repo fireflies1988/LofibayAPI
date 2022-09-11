@@ -8,6 +8,7 @@ using Domain.Models.ResponseTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using WeCantSpell.Hunspell;
 
 namespace LofibayAPI.Controllers
 {
@@ -128,6 +129,94 @@ namespace LofibayAPI.Controllers
             }
 
             return UnprocessableEntity(new FailResponse { Message = "Something went wrong, unable to update state of this photo." });
+        }
+
+        [HttpGet("tags")]
+        public async Task<IActionResult> GetAllTags(string? keyword = null, bool bad = false)
+        {
+            var tags = await _unitOfWork.Tags.GetAllAsync();
+            if (bad == true)
+            {
+                IList<Tag> badTags = new List<Tag>();
+                var dictionary = WordList.CreateFromFiles(@"en-US.dic");
+                foreach (var tag in tags)
+                {
+                    string[] words = tag.Name!.Split(new char[] { }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var word in words)
+                    {
+                        if (!dictionary.Check(word))
+                        {
+                            badTags.Add(tag);
+                        }
+                    }
+                }
+
+                
+                if (keyword != null)
+                {
+                    IList<Tag> badTagsContainingKeyword = new List<Tag>();
+                    foreach (var tag in badTags)
+                    {
+                        if (tag.Name?.ToLower().Contains(keyword.ToLower()) == true)
+                        {
+                            badTagsContainingKeyword.Add(tag);
+                        }
+                    }
+
+                    return Ok(new SuccessResponse
+                    {
+                        Data = badTagsContainingKeyword
+                    });
+                }
+                else
+                {
+                    return Ok(new SuccessResponse
+                    {
+                        Data = badTags
+                    });
+                }
+            }
+
+            if (keyword != null)
+            {
+                IList<Tag> tagsContainingKeyword = new List<Tag>();
+                foreach (var tag in tags)
+                {
+                    if (tag.Name?.ToLower().Contains(keyword.ToLower()) == true)
+                    {
+                        tagsContainingKeyword.Add(tag);
+                    }
+                }
+
+                return Ok(new SuccessResponse
+                {
+                    Data = tagsContainingKeyword
+                });
+            }
+            else
+            {
+                return Ok(new SuccessResponse
+                {
+                    Data = tags
+                });
+            }
+        }
+
+        [HttpDelete("tags/{name}")]
+        public async Task<IActionResult> RemoveTag(string name)
+        {
+            var existingTag = await _unitOfWork.Tags.GetByIdAsync(name);
+            if (existingTag == null)
+            {
+                return NotFound(new NotFoundResponse { Message = "Tag not found." });
+            }
+            _unitOfWork.Tags.Remove(existingTag);
+            if ((await _unitOfWork.SaveChangesAsync()) > 0)
+            {
+                return Ok(new SuccessResponse { Message = $"You have deleted tag '{name}' successfully." });
+            }
+
+            return UnprocessableEntity(new FailResponse { Message = "Unable to delete this tag." });
         }
     }
 }

@@ -20,15 +20,6 @@ namespace LofibayAPI.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetAll()
-        {
-            return Ok(new SuccessResponse<object>
-            {
-                Data = await _unitOfWork.Tags.GetAllAsync()
-            });
-        }
-
         [HttpGet("{id}")]
         public async Task<ActionResult<Tag>> GetById(int id)
         {

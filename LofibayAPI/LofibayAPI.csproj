@@ -17,6 +17,7 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.2" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.4" />
+    <PackageReference Include="WeCantSpell.Hunspell" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>

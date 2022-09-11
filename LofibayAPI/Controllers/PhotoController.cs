@@ -67,7 +67,7 @@ namespace LofibayAPI.Controllers
                     {
                         bool matchedWithTag = false;
 
-                        if (photo.Description?.ToLower().Contains(keyword) == true)
+                        if (photo.Description?.ToLower().Contains(keyword.ToLower()) == true)
                         {
                             filteredPhotos.Add(_mapper.Map<Photo, BasicPhotoInfoResponse>(photo));
                             break;
@@ -75,7 +75,7 @@ namespace LofibayAPI.Controllers
 
                         foreach (var tag in photo.PhotoTags!)
                         {
-                            if (tag.TagName?.ToLower().Contains(keyword) == true)
+                            if (tag.TagName?.ToLower().Contains(keyword.ToLower()) == true)
                             {
                                 matchedWithTag = true;
                                 filteredPhotos.Add(_mapper.Map<Photo, BasicPhotoInfoResponse>(photo));

@@ -153,6 +153,26 @@ namespace LofibayAPI.Controllers
         }
 
         [Authorize]
+        [HttpDelete("current/soft")]
+        public async Task<IActionResult> SoftDeleteUser()
+        {
+            User? currentUser = await _unitOfWork.Users.GetByIdAsync(_userService.GetCurrentUserId());
+            currentUser!.DeletedDate = DateTime.Now;
+            if ((await _unitOfWork.SaveChangesAsync()) > 0)
+            {
+                return Ok(new SuccessResponse
+                {
+                    Message = "You have deleted your account."
+                });
+            }
+
+            return UnprocessableEntity(new FailResponse
+            {
+                Message = "Unable to delete your account."
+            });
+        }
+
+        [Authorize]
         [HttpPatch("current/password/change")]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
         {

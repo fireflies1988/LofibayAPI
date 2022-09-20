@@ -178,7 +178,7 @@ namespace DataAccessEF.Services
             ImageUploadParams uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(_userService.GetCurrentUserId().ToString(), uploadPhotoRequest.ImageFile!.OpenReadStream()),
-                Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{_userService.GetCurrentUserId()}",
+                Folder = $"{Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER")}/{_userService.GetCurrentUserId()}",
                 Faces = true,
                 Colors = true,
                 Phash = true,

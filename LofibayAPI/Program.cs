@@ -15,10 +15,16 @@ var builder = WebApplication.CreateBuilder(args);
 ConfigurationHelper.Initialize(builder.Configuration);
 
 // Add services to the container.
-
+DotNetEnv.Env.Load();
 builder.Services.AddControllers();
-builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Lofibay")));
+
 //builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LofibayDev")));
+//builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("CONNECTIONSTRINGS_LOFIBAY_DEV")!));
+//builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LofibayStaging")));
+//builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("CONNECTIONSTRINGS_LOFIBAY_STAGING")!));
+//builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LofibayProduction")));
+builder.Services.AddDbContext<LofibayDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("CONNECTIONSTRINGS_LOFIBAY_PRODUCTION")!));
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITokenService, TokenService>();
@@ -27,7 +33,7 @@ builder.Services.AddTransient<IPhotoService, PhotoService>();
 builder.Services.AddTransient<ICollectionService, CollectionService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddSingleton(new Cloudinary(builder.Configuration!["CloudinaryUrl"]));
+builder.Services.AddSingleton(new Cloudinary(Environment.GetEnvironmentVariable("CLOUDINARY_URL")));
 
 string myCorsPolicy = "MyCorsPolicy";
 builder.Services.AddCors(p => p.AddPolicy(myCorsPolicy, builder =>
@@ -53,16 +59,16 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Audience = builder.Configuration["Jwt:ValidAudience"];
+        options.Audience = Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE");
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
-            ValidAudience = builder.Configuration["Jwt:ValidAudience"],
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
+            ValidAudience = Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"),
             ClockSkew = TimeSpan.Zero, // default is five minutes (not sure)
-            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(builder.Configuration!["Jwt:SecretKey"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!))
         };
         options.Events = new JwtBearerEvents
         {

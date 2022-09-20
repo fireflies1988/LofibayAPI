@@ -220,7 +220,7 @@ namespace DataAccessEF.Services
                 ImageUploadParams uploadParams = new ImageUploadParams
                 {
                     File = new FileDescription(GetCurrentUserId().ToString(), updateUserRequest.ImageFile!.OpenReadStream()),
-                    Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{GetCurrentUserId()}",
+                    Folder = $"{Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER")}/{GetCurrentUserId()}",
                     Faces = true,
                     Colors = true,
                     Phash = true,
@@ -262,7 +262,7 @@ namespace DataAccessEF.Services
                 ImageUploadParams uploadParams = new ImageUploadParams
                 {
                     File = new FileDescription(GetCurrentUserId().ToString(), updatePaymentInfoRequest.BankQRCodeImageFile!.OpenReadStream()),
-                    Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{GetCurrentUserId()}"
+                    Folder = $"{Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER")}/{GetCurrentUserId()}"
                 };
                 ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
                 if (uploadResult.StatusCode == HttpStatusCode.OK)
@@ -281,7 +281,7 @@ namespace DataAccessEF.Services
                 ImageUploadParams uploadParams = new ImageUploadParams
                 {
                     File = new FileDescription(GetCurrentUserId().ToString(), updatePaymentInfoRequest.MomoQRCodeImageFile!.OpenReadStream()),
-                    Folder = $"{ConfigurationHelper.Configuration!["CloudinaryFolder"]}/{GetCurrentUserId()}"
+                    Folder = $"{Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER")}/{GetCurrentUserId()}"
                 };
                 ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
                 if (uploadResult.StatusCode == HttpStatusCode.OK)

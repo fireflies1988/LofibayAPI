@@ -13,7 +13,7 @@ namespace Common.Helpers
         public static string GenerateAccessToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var secretKey = Convert.FromBase64String(ConfigurationHelper.Configuration!["Jwt:SecretKey"]);
+            var secretKey = Convert.FromBase64String(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!);
 
             var claimsIdentity = new ClaimsIdentity(new[]
             {
@@ -28,8 +28,8 @@ namespace Common.Helpers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = claimsIdentity,
-                Issuer = ConfigurationHelper.Configuration["Jwt:ValidIssuer"],
-                Audience = ConfigurationHelper.Configuration["Jwt:ValidAudience"],
+                Issuer = Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
+                Audience = Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"),
                 Expires = DateTime.Now.AddMinutes(ConfigurationHelper.Configuration.GetValue<double>("Jwt:AccessTokenExpirationMinutes")),
                 SigningCredentials = signingCredentials
             };

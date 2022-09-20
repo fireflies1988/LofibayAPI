@@ -3,13 +3,7 @@ using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests.Emails;
 using Domain.Models.ResponseTypes;
 using Mailjet.Client;
-using Mailjet.Client.Resources;
 using Mailjet.Client.TransactionalEmails;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using Microsoft.Extensions.Configuration;
-using MimeKit;
-using Newtonsoft.Json.Linq;
 
 namespace DataAccessEF.Services
 {
@@ -20,12 +14,12 @@ namespace DataAccessEF.Services
             try
             {
                 MailjetClient client = new MailjetClient(
-                ConfigurationHelper.Configuration!["Mailjet:ApiKey"],
-                ConfigurationHelper.Configuration!["Mailjet:SecretKey"]);
+                    Environment.GetEnvironmentVariable("MAILJET_API_KEY"),
+                    Environment.GetEnvironmentVariable("MAILJET_SECRET_KEY"));
 
                 // construct your email with builder
                 var email = new TransactionalEmailBuilder()
-                       .WithFrom(new SendContact(ConfigurationHelper.Configuration!["Mailjet:Email"], "Lofibay"))
+                       .WithFrom(new SendContact(Environment.GetEnvironmentVariable("MAILJET_EMAIL"), "Lofibay"))
                        .WithSubject("Lofibay - Verify your account")
                        .WithHtmlPart(string.Format(EmailTemplateHelper.VerificationEmail, verificationEmailRequest.VerificationCode))
                        .WithTo(new SendContact(verificationEmailRequest.To))
@@ -49,12 +43,12 @@ namespace DataAccessEF.Services
             try
             {
                 MailjetClient client = new MailjetClient(
-                ConfigurationHelper.Configuration!["Mailjet:ApiKey"],
-                ConfigurationHelper.Configuration!["Mailjet:SecretKey"]);
+                    Environment.GetEnvironmentVariable("MAILJET_API_KEY"),
+                    Environment.GetEnvironmentVariable("MAILJET_SECRET_KEY"));
 
                 // construct your email with builder
                 var email = new TransactionalEmailBuilder()
-                       .WithFrom(new SendContact(ConfigurationHelper.Configuration!["Mailjet:Email"], "Lofibay"))
+                       .WithFrom(new SendContact(Environment.GetEnvironmentVariable("MAILJET_EMAIL"), "Lofibay"))
                        .WithSubject(emailRequest.Subject)
                        .WithHtmlPart(emailRequest.Body)
                        .WithTo(new SendContact(emailRequest.To))

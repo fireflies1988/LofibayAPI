@@ -5,6 +5,7 @@ using DataAccessEF.Services;
 using DataAccessEF.UnitOfWork;
 using Domain.Interfaces;
 using Domain.Interfaces.Services;
+using LofibayAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -92,6 +93,11 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 //}
+
+if (app.Environment.IsStaging())
+{
+    app.UseMiddleware<ApiKeyMiddleware>();
+}
 
 app.UseCors(myCorsPolicy);
 

@@ -39,7 +39,7 @@ builder.Services.AddSingleton(new Cloudinary(Environment.GetEnvironmentVariable(
 string myCorsPolicy = "MyCorsPolicy";
 builder.Services.AddCors(p => p.AddPolicy(myCorsPolicy, builder =>
 {
-    builder.WithOrigins(Environment.GetEnvironmentVariable("MY_ORIGIN")!).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Token-Expired");
+    builder.WithOrigins(Environment.GetEnvironmentVariable("MY_ORIGIN") ?? "*").AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Token-Expired");
 }));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -94,12 +94,12 @@ app.UseSwagger();
 app.UseSwaggerUI();
 //}
 
+app.UseCors(myCorsPolicy);
+
 if (app.Environment.IsStaging())
 {
     app.UseMiddleware<ApiKeyMiddleware>();
 }
-
-app.UseCors(myCorsPolicy);
 
 app.UseHttpsRedirection();
 

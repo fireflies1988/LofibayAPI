@@ -1,12 +1,14 @@
 ﻿using Domain.Interfaces.Services;
 using Domain.Models.DTOs.Requests.Emails;
 using Domain.Models.ResponseTypes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LofibayAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class EmailController : ControllerBase
     {
         private readonly IEmailService _emailService;
